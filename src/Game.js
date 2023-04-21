@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
 import { joinResult } from './util';
+import { valueInPos } from './util';
+import { setEmpty } from './util';
 
 let pengine;
 
@@ -66,15 +68,46 @@ function Game() {
           RGrids
         ).
     */
+    let modifiedColumns = new Set();
+    path.forEach(element => {
+      setEmpty(element, grid, numOfColumns);
+      modifiedColumns.add(element[1]);
+      console.log(modifiedColumns);
+    });
+
+    const numOfRows = grid.length / numOfColumns;
+        modifiedColumns.forEach(col => {
+          let count = numOfRows - 1;
+          for(let i = numOfRows - 1; i >= 0; i--){
+            if(valueInPos([i, col], grid, numOfColumns) != 0){
+              grid[count * numOfColumns + col] = grid[i * numOfColumns + col];
+              count--;
+            }
+          }
+          
+          while (count >=  0){
+            grid[count * numOfColumns + col] = 0;
+            count--;
+          }
+    });
+
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
     const queryS = "join(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)";
     setWaiting(true);
+    
+
+
     pengine.query(queryS, (success, response) => {
       if (success) {
         setScore(score + joinResult(path, grid, numOfColumns));
         setPath([]);
         animateEffect(response['RGrids']);
+        
+
+        
+        console.log(grid);
+        setGrid(grid);
       } else {
         setWaiting(false);
       }

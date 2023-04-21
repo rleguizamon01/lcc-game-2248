@@ -16,6 +16,11 @@ export const valueInPos = (pos, grid, numOfColumns) => {
     return grid[pos[0] * numOfColumns + pos[1]];
 }
 
+/*nuevo*/
+export const setEmpty = (pos, grid, numOfColumns) => {
+    grid[pos[0] * numOfColumns + pos[1]] = 0;
+}
+
 export const posInPath = (pos, path) => {
     return path.some(posI => equalPos(posI, pos));
 }
