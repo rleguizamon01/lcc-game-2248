@@ -1,0 +1,37 @@
+
+:javascript:S1451"&Add or update the header of this file.
+javascript:S3798"^Define this declaration in a local scope or bind explicitly the property to the global object.(¢Â¥–ûÿÿÿÿ
+Bjavascript:S139	""Expected comment to be above code.(Ì÷ûûÿÿÿÿ
+9javascript:S126"Add the missing "else" clause.(¯”È
+=javascript:S139""Expected comment to be above code.(¯”È
+Bjavascript:S139""Expected comment to be above code.(â°‘„ıÿÿÿÿ
+Bjavascript:S139""Expected comment to be above code.(Ëûàİüÿÿÿÿ
+=javascript:S139""Expected comment to be above code.(´»ÃŞ
+3javascript:S109"No magic number: 2.(¨ÔÂàüÿÿÿÿ
+Bjavascript:S139""Expected comment to be above code.(¨ÔÂàüÿÿÿÿ
+>javascript:S126"Add the missing "else" clause.(·—†úÿÿÿÿ
+3javascript:S109"No magic number: 2.(Ø„ññúÿÿÿÿ
+Bjavascript:S139""Expected comment to be above code.(™¨¿°ùÿÿÿÿ
+9javascript:S1441$"Strings must use singlequote.(ŞÅ—
+>javascript:S1441%"Strings must use singlequote.(ÍÌ»ªÿÿÿÿÿ
+Ijavascript:S64805"(JSX props should not use arrow functions(Í¾á¤üÿÿÿÿ
+Djavascript:S64806"(JSX props should not use arrow functions(È€áÚ
+2javascript:S17747"Ternary operator used.(Å·ã
+9javascript:S14417"Strings must use singlequote.(Å·ã
+2javascript:S17747"Ternary operator used.(Å·ã
+`javascript:S33587"DExtract this nested ternary operation into an independent statement.(Å·ã
+9javascript:S14417"Strings must use singlequote.(Å·ã
+:javascript:S64798"Do not use Array index in keys(×çÙÙ
+9javascript:S126F"Add the missing "else" clause.(…ŒÏú
+>javascript:S1441I"Strings must use singlequote.(Òƒ½±şÿÿÿÿ
+7javascript:S1774I"Ternary operator used.(Òƒ½±şÿÿÿÿ
+9javascript:S126U"Add the missing "else" clause.(…ŒÏú
+>javascript:S1441X"Strings must use singlequote.(¦ÌşÆøÿÿÿÿ
+7javascript:S1774X"Ternary operator used.(¦ÌşÆøÿÿÿÿ
+9javascript:S126d"Add the missing "else" clause.(…ŒÏú
+>javascript:S1441g"Strings must use singlequote.(»Œ¥ıÿÿÿÿ
+7javascript:S1774g"Ternary operator used.(»Œ¥ıÿÿÿÿ
+9javascript:S126s"Add the missing "else" clause.(…ŒÏú
+9javascript:S1441v"Strings must use singlequote.(©É§Ÿ
+2javascript:S1774v"Ternary operator used.(©É§Ÿ
+Njavascript:S113~".Newline required at end of file but not found.(Ï®å—ûÿÿÿÿ

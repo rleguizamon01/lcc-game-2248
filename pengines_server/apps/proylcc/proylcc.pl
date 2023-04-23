@@ -10,14 +10,19 @@
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
 
-join(Grid, _NumOfColumns, _Path, RGrids):-
+ :- module(proylcc, 
+	[  
+		join/4
+	]).
+
+join(Grid, NumOfColumns, Path, RGrids):-
 	Grid = [N | Ns],	% La implementación actual es simplemente a modo de muestra, y no tiene sentido, debe reepmplazarla
 	N2 is N * 2,		% por una implementación válida.
-	positionList(Path, _NumOfColumns, PositionPath),
+	positionList(Path, NumOfColumns, PositionPath),
 	emptyGrid2(Grid, PositionPath, 0, EmptyGrid),
 	last(PositionPath, Last),
-	setNewBlock(Grid, 0, Last, 77, OldGrid),
-	RGrids = [OldGrid, [N2 | Ns]].
+	setNewBlock(EmptyGrid, 0, Last, 77, EmptyGridWithNewBlock),
+	RGrids = [EmptyGridWithNewBlock, [N2 | Ns]].
 
 
 positionList(Path, NumOfColumns, PositionPath) :-
@@ -37,7 +42,7 @@ positionListAux([N | T], NumOfColumns, PositionPath, Result) :-
 	En caso de serlo, se modificara el valor del elemento de la grilla a 0, sino este no cambiara
 */
 
-emptyGrid2([N], PositionPath, PosActual, EmptyGrid) :- 
+emptyGrid2([_N], PositionPath, PosActual, EmptyGrid) :- 
 	member(PosActual, PositionPath),
 	EmptyGrid = [0].
 
@@ -47,10 +52,11 @@ emptyGrid2([N], PositionPath, PosActual, EmptyGrid) :-
 
 
 emptyGrid2([N | Ns], PositionPath, PosActual, EmptyGrid) :- 
+    NextPos is PosActual + 1,
 	(member(PosActual, PositionPath),
-	emptyGrid2(Ns, PositionPath, PosActual + 1, EmptyGridAux),
+	emptyGrid2(Ns, PositionPath, NextPos, EmptyGridAux),
 	append([0], EmptyGridAux, EmptyGrid));
-	emptyGrid2(Ns, PositionPath, PosActual + 1, EmptyGridAux),
+	emptyGrid2(Ns, PositionPath, NextPos, EmptyGridAux),
 	append([N], EmptyGridAux, EmptyGrid).
 
 
@@ -58,20 +64,13 @@ emptyGrid2([N | Ns], PositionPath, PosActual, EmptyGrid) :-
 	Recorre la lista hasta ubicar la posicion de la grilla correspondiente a la ultima posicion del path,
 	reemplazando su valor por la potencia de dos mas cercana a la suma de los elementos del path.
 */
-setNewBlock([N | Ns], Inicio, Fin, Valor, [Valor | Ns]) :-
+setNewBlock([_N | Ns], Inicio, Fin, Valor, [Valor | Ns]) :-
 	Inicio =:= Fin.
 
 setNewBlock([N | Ns], Inicio, Fin, Valor, ModGrid) :-
 	Inicio =\= Fin,
 	setNewBlock(Ns, Inicio + 1, Fin, Valor, ModGridAux),
 	append(N, ModGridAux, ModGrid).
-
-	
-
-
-
-
-
 
 
 /*
