@@ -77,6 +77,47 @@ setNewBlock([N | Ns], Inicio, Fin, Valor, ModGrid) :-
     NewInicio is Inicio + 1,
 	setNewBlock(Ns, NewInicio, Fin, Valor, ModGridAux),
 	append([N], ModGridAux, ModGrid).
+
+
+/*
+	Busca en la matriz por un determinado valor
+*/
+
+returnValueOfGrid([N | _Ns], Inicio, Fin, N) :-
+	Inicio =:= Fin.
+
+returnValueOfGrid([N | _Ns], Inicio, Fin, Valor) :-
+	Inicio =\= Fin,
+    NewInicio is Inicio + 1,
+	returnValueOfGrid(Ns, NewInicio, Fin, Valor).
+
+/*
+	Devuelve una sumatoria de todos los valores correspondientes a los bloques en el path
+*/
+
+sumOfPath([N], [P | Ps], Inicio, Res) :-
+	returnValueOfGrid([N | Ns], P, Inicio, Res).
+
+
+sumOfPath([N | Ns], [P | Ps], Inicio, Res) :-
+	returnValueOfGrid([N | Ns], P, Inicio, Valor),
+	sumOfPath(Ns, Ps, 0, ResAux),
+	Res is ResAux + Valor.
+
+
+/*
+	Calcula la potencia de dos mas cercana o igual a un determinado numero
+*/
+
+smallerPow2GreaterOrEqualThan(Num, Resultado) :-
+	Log2Num is floor(log(Num)),
+	pow(2, Log2Num, ResPow),
+	(ResPow =:= Num,
+	Resultado = Num);
+	Log2NumAux is Log2Num + 1,
+	pow(2, Log2NumAux, Resultado).
+
+
 /*
 	Implementaciones viejas de emptyGrid
 */
