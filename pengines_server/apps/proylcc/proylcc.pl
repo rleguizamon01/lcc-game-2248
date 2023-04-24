@@ -51,13 +51,18 @@ emptyGrid2([N], PositionPath, PosActual, EmptyGrid) :-
 	EmptyGrid = [N].
 
 
+emptyGrid2([_N | Ns], PositionPath, PosActual, EmptyGrid) :- 
+    NextPos is PosActual + 1,
+	member(PosActual, PositionPath),
+	emptyGrid2(Ns, PositionPath, NextPos, EmptyGridAux),
+	append([0], EmptyGridAux, EmptyGrid).
+
 emptyGrid2([N | Ns], PositionPath, PosActual, EmptyGrid) :- 
     NextPos is PosActual + 1,
-	(member(PosActual, PositionPath),
-	emptyGrid2(Ns, PositionPath, NextPos, EmptyGridAux),
-	append([0], EmptyGridAux, EmptyGrid));
+	\+member(PosActual, PositionPath),
 	emptyGrid2(Ns, PositionPath, NextPos, EmptyGridAux),
 	append([N], EmptyGridAux, EmptyGrid).
+
 
 
 /* 
@@ -69,10 +74,9 @@ setNewBlock([_N | Ns], Inicio, Fin, Valor, [Valor | Ns]) :-
 
 setNewBlock([N | Ns], Inicio, Fin, Valor, ModGrid) :-
 	Inicio =\= Fin,
-	setNewBlock(Ns, Inicio + 1, Fin, Valor, ModGridAux),
-	append(N, ModGridAux, ModGrid).
-
-
+    NewInicio is Inicio + 1,
+	setNewBlock(Ns, NewInicio, Fin, Valor, ModGridAux),
+	append([N], ModGridAux, ModGrid).
 /*
 	Implementaciones viejas de emptyGrid
 */
