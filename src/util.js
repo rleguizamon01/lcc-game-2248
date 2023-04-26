@@ -1,4 +1,6 @@
 export function numberToColor(num) {
+    while(num >= 1024)
+        num = num / 1024;
     switch (num) {
         case 2: return "#249cd1";
         case 4: return "#ec893b";
@@ -6,7 +8,10 @@ export function numberToColor(num) {
         case 16: return "#af4e7a";
         case 32: return "#a63e4a";
         case 64: return "#8d6ebc";
-        default: return "black";
+        case 128: return "#42f575";
+        case 256: return "#ebf21f";
+        case 512: return "#f21f46";
+        case 1024: return "#1f23f2";
     }
 }
 
