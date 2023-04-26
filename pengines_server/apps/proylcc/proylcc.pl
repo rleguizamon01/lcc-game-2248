@@ -15,26 +15,26 @@
 		join/4
 	]).
 
-join(Grid, NumOfColumns, Path, RGrids):-
-	Grid = [N | Ns],	% La implementación actual es simplemente a modo de muestra, y no tiene sentido, debe reepmplazarla
-	N2 is N * 2,		% por una implementación válida.
-	positionList(Path, NumOfColumns, PositionPath),
-	emptyGrid2(Grid, PositionPath, 0, EmptyGrid),
+join(Grid, NumOfColumns, Path, RGrids) :-
+	Grid = [_N | _Ns],	% La implementación actual es simplemente a modo de muestra, y no tiene sentido, debe reepmplazarl	% por una implementación válida.
+	positionPath(Path, NumOfColumns, PositionPath),
+	lastBlockValue(Grid, PositionPath, LastBlockValue),
+	emptyPathGrid(Grid, PositionPath, 0, EmptyPathGrid),
 	last(PositionPath, Last),
-	setNewBlock(EmptyGrid, 0, Last, 77, EmptyGridWithNewBlock),
-	RGrids = [EmptyGridWithNewBlock, [N2 | Ns]].
+	setLastBlock(EmptyPathGrid, 0, Last, LastBlockValue, EmptyPathGridWithLastBlock),
+	gridWithGravityApplied(EmptyPathGridWithLastBlock, NumOfColumns, GridWithGravity),
+	RGrids = [EmptyPathGridWithLastBlock, GridWithGravity]. % , [_N2 | Ns]].
 
 
-positionList(Path, NumOfColumns, PositionPath) :-
-    positionListAux(Path, NumOfColumns, [], PositionPath).
+positionPath(Path, NumOfColumns, PositionPath) :-
+    positionPathAux(Path, NumOfColumns, [], PositionPath).
 
-positionListAux([], _, PositionPath, Result) :-
+positionPathAux([], _, PositionPath, Result) :-
     Result = PositionPath.
-positionListAux([N | T], NumOfColumns, PositionPath, Result) :-
-    N = [NH | NT],
-    Position is NH * NumOfColumns +  NT,
+positionPathAux([[N | Ns] | T], NumOfColumns, PositionPath, Result) :-
+    Position is N * NumOfColumns +  Ns,
     append(PositionPath, [Position] , AppendedList),
-    positionListAux(T, NumOfColumns, AppendedList, Result).
+    positionPathAux(T, NumOfColumns, AppendedList, Result).
 
 
 /*
@@ -42,25 +42,25 @@ positionListAux([N | T], NumOfColumns, PositionPath, Result) :-
 	En caso de serlo, se modificara el valor del elemento de la grilla a 0, sino este no cambiara
 */
 
-emptyGrid2([_N], PositionPath, PosActual, EmptyGrid) :- 
+emptyPathGrid([_N], PositionPath, PosActual, EmptyGrid) :- 
 	member(PosActual, PositionPath),
 	EmptyGrid = [0].
 
-emptyGrid2([N], PositionPath, PosActual, EmptyGrid) :- 
+emptyPathGrid([N], PositionPath, PosActual, EmptyGrid) :- 
 	\+member(PosActual, PositionPath),
 	EmptyGrid = [N].
 
 
-emptyGrid2([_N | Ns], PositionPath, PosActual, EmptyGrid) :- 
+emptyPathGrid([_N | Ns], PositionPath, PosActual, EmptyGrid) :- 
     NextPos is PosActual + 1,
 	member(PosActual, PositionPath),
-	emptyGrid2(Ns, PositionPath, NextPos, EmptyGridAux),
+	emptyPathGrid(Ns, PositionPath, NextPos, EmptyGridAux),
 	append([0], EmptyGridAux, EmptyGrid).
 
-emptyGrid2([N | Ns], PositionPath, PosActual, EmptyGrid) :- 
+emptyPathGrid([N | Ns], PositionPath, PosActual, EmptyGrid) :- 
     NextPos is PosActual + 1,
 	\+member(PosActual, PositionPath),
-	emptyGrid2(Ns, PositionPath, NextPos, EmptyGridAux),
+	emptyPathGrid(Ns, PositionPath, NextPos, EmptyGridAux),
 	append([N], EmptyGridAux, EmptyGrid).
 
 
@@ -69,72 +69,134 @@ emptyGrid2([N | Ns], PositionPath, PosActual, EmptyGrid) :-
 	Recorre la lista hasta ubicar la posicion de la grilla correspondiente a la ultima posicion del path,
 	reemplazando su valor por la potencia de dos mas cercana a la suma de los elementos del path.
 */
-setNewBlock([_N | Ns], Inicio, Fin, Valor, [Valor | Ns]) :-
+setLastBlock([_N | Ns], Inicio, Fin, Valor, [Valor | Ns]) :-
 	Inicio =:= Fin.
 
-setNewBlock([N | Ns], Inicio, Fin, Valor, ModGrid) :-
+setLastBlock([N | Ns], Inicio, Fin, Valor, ModGrid) :-
 	Inicio =\= Fin,
     NewInicio is Inicio + 1,
-	setNewBlock(Ns, NewInicio, Fin, Valor, ModGridAux),
+	setLastBlock(Ns, NewInicio, Fin, Valor, ModGridAux),
 	append([N], ModGridAux, ModGrid).
 
 
 /*
-	Busca en la matriz por un determinado valor
+	Devuelve la suma de valores de la grilla en un determinado camino 
 */
 
-returnValueOfGrid([N | _Ns], Inicio, Fin, N) :-
-	Inicio =:= Fin.
+sumOfValuesInPath(Grid, PositionPath, Result) :-
+	sumOfValuesInPathAux(Grid, PositionPath, 0, 0, Result).
 
-returnValueOfGrid([N | _Ns], Inicio, Fin, Valor) :-
-	Inicio =\= Fin,
-    NewInicio is Inicio + 1,
-	returnValueOfGrid(Ns, NewInicio, Fin, Valor).
+sumOfValuesInPathAux([], _, _, SummedValues, Result) :-
+	Result = SummedValues.
+
+sumOfValuesInPathAux([G | Gs], PositionPath, CurrentGridPosition, SummedValues, Result) :-
+	NextGridPosition is CurrentGridPosition + 1,
+	(member(CurrentGridPosition, PositionPath) ->
+		SummedValuesAux is SummedValues + G,
+		sumOfValuesInPathAux(Gs, PositionPath, NextGridPosition, SummedValuesAux, Result)
+	;
+		sumOfValuesInPathAux(Gs, PositionPath, NextGridPosition, SummedValues, Result)
+	).
+	
+	
+
+
+
 
 /*
-	Devuelve una sumatoria de todos los valores correspondientes a los bloques en el path
+	Devuelve el valor que debería tener el bloque resultante
 */
 
-sumOfPath([N], [P | Ps], Inicio, Res) :-
-	returnValueOfGrid([N | Ns], P, Inicio, Res).
-
-
-sumOfPath([N | Ns], [P | Ps], Inicio, Res) :-
-	returnValueOfGrid([N | Ns], P, Inicio, Valor),
-	sumOfPath(Ns, Ps, 0, ResAux),
-	Res is ResAux + Valor.
-
+lastBlockValue(Grid, PositionPath, LastBlockValue) :-
+	sumOfValuesInPath(Grid, PositionPath, SumOfPathValue),
+	smallerPow2GreaterOrEqualThan(SumOfPathValue, LastBlockValue).
 
 /*
 	Calcula la potencia de dos mas cercana o igual a un determinado numero
 */
 
 smallerPow2GreaterOrEqualThan(Num, Resultado) :-
-	Log2Num is floor(log(Num)),
+	Log2Num is floor(log(Num)/log(2)),
 	pow(2, Log2Num, ResPow),
-	(ResPow =:= Num,
-	Resultado = Num);
-	Log2NumAux is Log2Num + 1,
-	pow(2, Log2NumAux, Resultado).
+	(
+    	ResPow =:= Num,
+		Resultado = Num
+    ;
+    	Log2NumAux is Log2Num + 1,
+    	pow(2, Log2NumAux, Resultado)
+    ).
 
-
-/*
-	Implementaciones viejas de emptyGrid
+/* Implementaciones de gravedad 
+   Revierte la lista
+   Si hay 0 en la lista, la recorre
+   Si el valor actual es 0, aplica gravedad en esa columna una única vez
+		Si CurrentPosition + NumOfColumns < GridLength
+			AboveBlockValue = Grid[CurrentPosition+NumOfColumns]
+			Si AboveBlockValue es 0
+				Recursivo! CurrentPosition+NumOfColumns
+			Sino
+				Return = AboveBlackValue
+		Sino
+			Return = 0
+			
 */
 
-emptyGrid(Grid, _NumOfColumns, Path, EmptyGrid) :-
-	Path = [[N1 | N1s] | [N2s | N2]],
-	Position = N1 * _NumOfColumns +  N1s;
-	recorrerYReemplazar(Grid, 0, Position, ModGrid);
-	emptyGrid(ModGrid, _NumOfColumns, [N2s | N2], EmptyGrid).
+gridWithGravityApplied(GridWithEmptyPath, NumOfColumns, Result) :-
+	reverse(GridWithEmptyPath, ReversedGrid),
+	gridWithGravityAppliedAux(ReversedGrid, NumOfColumns, 0, [], ResultAux),
+    reverse(ResultAux, Result).
 
+gridWithGravityAppliedAux([], _, _, GridWithGravity, Result) :-
+	Result = GridWithGravity.
 
-recorrerYReemplazar(Grid, Inicio, Fin, ModGrid) :-
-	Inicio = Fin, 
-	Grid = [N | Ns],
-	ModGrid = [0 | Ns];
-	recorrerYReemplazar(Grid, Inicio + 1, Fin, ModGrid).
- 
+gridWithGravityAppliedAux([CurrentBlock | T], NumOfColumns, CurrentPosition, GridWithGravity, Result) :-
+	NextPosition is CurrentPosition + 1,
+	% Si el bloque actual está vacío
+	(CurrentBlock =:= 0 ->
+		closestNotEmptyAboveBlock(T, NumOfColumns, AboveBlock),
+        append(GridWithGravity, [AboveBlock], GridWithGravityAppended),
+        (AboveBlock =\= 0 ->
+        	closestNotEmptyAboveBlockToZero([CurrentBlock | T], NumOfColumns, NumOfColumns, GridWithGravityWithZeroAbove),
+            GridWithGravityWithZeroAbove = [_ | TAux],
+            gridWithGravityAppliedAux(TAux, NumOfColumns, NextPosition, GridWithGravityAppended, Result)
+        
+        ;   
+        	gridWithGravityAppliedAux(T, NumOfColumns, NextPosition, GridWithGravityAppended, Result)
+        )
+	;
+		append(GridWithGravity, [CurrentBlock], GridWithGravityAppended),
+		gridWithGravityAppliedAux(T, NumOfColumns, NextPosition, GridWithGravityAppended, Result)
+	).
 
+closestNotEmptyAboveBlockToZero(Grid, Position, NumOfColumns, Result) :-
+	nth0(Position, Grid, Value, _),
+	(Value =:= 0 ->
+		DoublePosition is Position + NumOfColumns,
+		closestNotEmptyAboveBlockToZero(Grid, DoublePosition, NumOfColumns, Result)
+	;
+		replaceValueInGrid(Grid, Position, 0, Result)
+	).
+	
+replaceValueInGrid(List, Position, NewValue, Result) :-
+	nth0(Position, List, _, ListRemainder),
+	nth0(Position, Result, NewValue, ListRemainder).
 
+closestNotEmptyAboveBlock(Grid, NumOfColumns, Result) :-
+	closestNotEmptyAboveBlockAux(Grid, NumOfColumns, 1, Result).
 
+closestNotEmptyAboveBlockAux([], _, _, Result) :-
+	Result = 0.
+
+closestNotEmptyAboveBlockAux([CurrentBlock | T], NumOfColumns, CurrentPosition, Result) :-
+	% Si la posición actual pertenece a la columna correcta
+	(((CurrentPosition mod NumOfColumns) =\= 0) ->
+		NextPosition is CurrentPosition + 1,
+		closestNotEmptyAboveBlockAux(T, NumOfColumns, NextPosition, Result)
+	;
+		% Si el bloque actual no está vacío
+		(CurrentBlock =\= 0 ->
+			Result = CurrentBlock
+		;
+			closestNotEmptyAboveBlockAux(T, NumOfColumns, 1, Result)
+		)
+	).
