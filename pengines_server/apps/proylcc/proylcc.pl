@@ -23,7 +23,7 @@ join(Grid, NumOfColumns, Path, RGrids) :-
 	last(PositionPath, Last),
 	setLastBlock(EmptyPathGrid, 0, Last, LastBlockValue, EmptyPathGridWithLastBlock),
 	gridWithGravityApplied(EmptyPathGridWithLastBlock, NumOfColumns, GridWithGravity),
-	RGrids = [EmptyPathGridWithLastBlock, GridWithGravity]. % , [_N2 | Ns]].
+	RGrids = [EmptyPathGrid, EmptyPathGridWithLastBlock, GridWithGravity]. % , [_N2 | Ns]].
 
 
 positionPath(Path, NumOfColumns, PositionPath) :-
@@ -128,8 +128,9 @@ smallerPow2GreaterOrEqualThan(Num, Resultado) :-
 */
 gridWithGravityApplied(GridWithEmptyPath, NumOfColumns, Result) :-
 	reverse(GridWithEmptyPath, ReversedGrid),
-	gridWithGravityAppliedAux(ReversedGrid, NumOfColumns, 0, [], ResultAux),
-    reverse(ResultAux, Result).
+	gridWithGravityAppliedAux(ReversedGrid, NumOfColumns, 0, [], ResultAux1),
+    reverse(ResultAux1, ResultAux2),
+	replaceZeros(ResultAux2, Result).
 
 gridWithGravityAppliedAux([], _, _, GridWithGravity, Result) :-
 	Result = GridWithGravity.
@@ -178,3 +179,29 @@ aboveBlockPositionAux(Grid, CurrentPosition, NumOfColumns, Result) :-
 replaceValueInGridPosition(List, Position, NewValue, Result) :-
 	nth0(Position, List, _, ListRemainder),
 	nth0(Position, Result, NewValue, ListRemainder).
+
+
+replaceZeros([N], Result) :-
+	((N =:= 0) ->
+		generateRandomBlock(X),
+		Result = [X]
+	;
+		Result = [N]
+	).
+
+replaceZeros([N | Ns], Result) :-
+	replaceZeros(Ns, ResultAux),
+	((N =:= 0) ->
+		generateRandomBlock(X),
+		append([X], ResultAux, Result)
+	;
+		append([N], ResultAux, Result)
+	).
+
+/*
+	Genera un bloque aleatorio
+*/
+
+generateRandomBlock(Num) :-
+	random(1, 7, X),
+	pow(2, X, Num).

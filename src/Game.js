@@ -79,13 +79,14 @@ function Game() {
 
     const queryS = "join(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)";
     setWaiting(true);
-    
+  
 
 
     pengine.query(queryS, (success, response) => {
       if (success) {
         setScore(score + joinResult(path, grid, numOfColumns));
         setPath([]);
+        
         animateEffect(response['RGrids']);
         
       } else {
