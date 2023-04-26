@@ -15,6 +15,7 @@ function Game() {
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
+  const [pathScore, setPathScore] = useState(0);
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -44,6 +45,7 @@ function Game() {
       return;
     }
     setPath(newPath);
+    setPathScore(joinResult(path, grid, numOfColumns));
     console.log(JSON.stringify(newPath));
   }
 
@@ -117,6 +119,7 @@ function Game() {
   return (
     <div className="game">
       <div className="header">
+        <div className="pathScore">{pathScore}</div>
         <div className="score">{score}</div>
       </div>
       <Board

@@ -1,5 +1,5 @@
 export function numberToColor(num) {
-    while(num >= 1024)
+    while(num > 1024)
         num = num / 1024;
     switch (num) {
         case 2: return "#249cd1";

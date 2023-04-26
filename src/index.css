@@ -17,6 +17,12 @@ body {
   width: 100%;
 }
 
+.pathScore {
+  margin: 10px;
+  visibility: hidden;
+  display: none;
+} 
+
 .score {
   margin: 10px;
   font-size: 25px;
