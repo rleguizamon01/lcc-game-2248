@@ -98,11 +98,6 @@ sumOfValuesInPathAux([G | Gs], PositionPath, CurrentGridPosition, SummedValues, 
 		sumOfValuesInPathAux(Gs, PositionPath, NextGridPosition, SummedValues, Result)
 	).
 	
-	
-
-
-
-
 /*
 	Devuelve el valor que debería tener el bloque resultante
 */
@@ -126,21 +121,11 @@ smallerPow2GreaterOrEqualThan(Num, Resultado) :-
     	pow(2, Log2NumAux, Resultado)
     ).
 
-/* Implementaciones de gravedad 
-   Revierte la lista
-   Si hay 0 en la lista, la recorre
-   Si el valor actual es 0, aplica gravedad en esa columna una única vez
-		Si CurrentPosition + NumOfColumns < GridLength
-			AboveBlockValue = Grid[CurrentPosition+NumOfColumns]
-			Si AboveBlockValue es 0
-				Recursivo! CurrentPosition+NumOfColumns
-			Sino
-				Return = AboveBlackValue
-		Sino
-			Return = 0
-			
-*/
+/* Implementaciones de gravedad */
 
+/* 
+	Devuelve una grilla luego de aplicar gravedad
+*/
 gridWithGravityApplied(GridWithEmptyPath, NumOfColumns, Result) :-
 	reverse(GridWithEmptyPath, ReversedGrid),
 	gridWithGravityAppliedAux(ReversedGrid, NumOfColumns, 0, [], ResultAux),
@@ -149,54 +134,47 @@ gridWithGravityApplied(GridWithEmptyPath, NumOfColumns, Result) :-
 gridWithGravityAppliedAux([], _, _, GridWithGravity, Result) :-
 	Result = GridWithGravity.
 
-gridWithGravityAppliedAux([CurrentBlock | T], NumOfColumns, CurrentPosition, GridWithGravity, Result) :-
+gridWithGravityAppliedAux(Grid, NumOfColumns, CurrentPosition, NewGrid, Result) :-
+	Grid = [CurrentBlock | T],
 	NextPosition is CurrentPosition + 1,
 	% Si el bloque actual está vacío
 	(CurrentBlock =:= 0 ->
-		closestNotEmptyAboveBlock(T, NumOfColumns, AboveBlock),
-        append(GridWithGravity, [AboveBlock], GridWithGravityAppended),
-        (AboveBlock =\= 0 ->
-        	closestNotEmptyAboveBlockToZero([CurrentBlock | T], NumOfColumns, NumOfColumns, GridWithGravityWithZeroAbove),
-            GridWithGravityWithZeroAbove = [_ | TAux],
-            gridWithGravityAppliedAux(TAux, NumOfColumns, NextPosition, GridWithGravityAppended, Result)
-        
-        ;   
-        	gridWithGravityAppliedAux(T, NumOfColumns, NextPosition, GridWithGravityAppended, Result)
-        )
+		aboveBlockPosition(Grid, NumOfColumns, AboveBlockPosition),
+		nth0(AboveBlockPosition, Grid, AboveBlockValue),
+		replaceValueInGridPosition(Grid, AboveBlockPosition, 0, GridWithAboveBlockReplaced),
+        append(NewGrid, [AboveBlockValue], NewGridAppended),
+		GridWithAboveBlockReplaced = [_ | TAux],
+		gridWithGravityAppliedAux(TAux, NumOfColumns, NextPosition, NewGridAppended, Result)
 	;
-		append(GridWithGravity, [CurrentBlock], GridWithGravityAppended),
-		gridWithGravityAppliedAux(T, NumOfColumns, NextPosition, GridWithGravityAppended, Result)
+		append(NewGrid, [CurrentBlock], NewGridAppended),
+		gridWithGravityAppliedAux(T, NumOfColumns, NextPosition, NewGridAppended, Result)
 	).
 
-closestNotEmptyAboveBlockToZero(Grid, Position, NumOfColumns, Result) :-
-	nth0(Position, Grid, Value, _),
-	(Value =:= 0 ->
-		DoublePosition is Position + NumOfColumns,
-		closestNotEmptyAboveBlockToZero(Grid, DoublePosition, NumOfColumns, Result)
+/* 
+	Devuelve la posición dentro de la lista del bloque no vacío más cercano dentro de la misma columna
+	Si no existe un bloque por encima no vacío, devuelve 0
+*/
+
+aboveBlockPosition(Grid, NumOfColumns, Result) :-
+	aboveBlockPositionAux(Grid, NumOfColumns, NumOfColumns, Result).
+
+aboveBlockPositionAux(Grid, CurrentPosition, _, Result) :-
+	length(Grid, GridLength),
+    CurrentPosition >= GridLength,
+    Result = 0.
+
+aboveBlockPositionAux(Grid, CurrentPosition, NumOfColumns, Result) :-
+	nth0(CurrentPosition, Grid, Value),
+	NextPosition is CurrentPosition + NumOfColumns,
+	((Value =:= 0) ->
+		aboveBlockPositionAux(Grid, NextPosition, NumOfColumns, Result)
 	;
-		replaceValueInGrid(Grid, Position, 0, Result)
+		Result = CurrentPosition
 	).
-	
-replaceValueInGrid(List, Position, NewValue, Result) :-
+
+/* 
+	Devuelve una lista que reemplaza el valor en cierta posición por un nuevo valor
+*/
+replaceValueInGridPosition(List, Position, NewValue, Result) :-
 	nth0(Position, List, _, ListRemainder),
 	nth0(Position, Result, NewValue, ListRemainder).
-
-closestNotEmptyAboveBlock(Grid, NumOfColumns, Result) :-
-	closestNotEmptyAboveBlockAux(Grid, NumOfColumns, 1, Result).
-
-closestNotEmptyAboveBlockAux([], _, _, Result) :-
-	Result = 0.
-
-closestNotEmptyAboveBlockAux([CurrentBlock | T], NumOfColumns, CurrentPosition, Result) :-
-	% Si la posición actual pertenece a la columna correcta
-	(((CurrentPosition mod NumOfColumns) =\= 0) ->
-		NextPosition is CurrentPosition + 1,
-		closestNotEmptyAboveBlockAux(T, NumOfColumns, NextPosition, Result)
-	;
-		% Si el bloque actual no está vacío
-		(CurrentBlock =\= 0 ->
-			Result = CurrentBlock
-		;
-			closestNotEmptyAboveBlockAux(T, NumOfColumns, 1, Result)
-		)
-	).
