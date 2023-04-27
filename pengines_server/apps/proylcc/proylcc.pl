@@ -260,9 +260,6 @@ revisarSiHayAdyacenteIgual(GridOriginal, N, ListaAdyacentes, ListaAdyacentesIgua
 
 calcularListaAdyacentes(Index, NumOfColumns, Res) :-
 	Res = [],
-	(checkAdyancentRight(...) ->
-		Xi
-	),
 	(X1 is Index + 1, X > 0, append([X1], Res)),
 	(X2 is Index - 1, Y > 0, append([X2], Res)),
 	(X3 is Index + NumOfColumns, append([X3], Res)),
