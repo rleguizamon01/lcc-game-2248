@@ -260,6 +260,9 @@ revisarSiHayAdyacenteIgual(GridOriginal, N, ListaAdyacentes, ListaAdyacentesIgua
 
 calcularListaAdyacentes(Index, NumOfColumns, Res) :-
 	Res = [],
+	(checkAdyancentRight(...) ->
+		Xi
+	),
 	(X1 is Index + 1, X > 0, append([X1], Res)),
 	(X2 is Index - 1, Y > 0, append([X2], Res)),
 	(X3 is Index + NumOfColumns, append([X3], Res)),
@@ -268,3 +271,36 @@ calcularListaAdyacentes(Index, NumOfColumns, Res) :-
 	(X6 is Index - NumOfColumns, X6 > 0, append([X6], Res)),
 	(X7 is Index - NumOfColumns, X7 > 0, append([X7], Res)),
 	(X8 is Index - NumOfColumns, X8 > 0, append([X8], Res)).
+
+
+/* Booster colapsar iguales */
+
+checkAdyacentRight(CurrentPosition, NumOfColumns) :-
+	RightPosition is CurrentPosition + 1,
+	RightPosition mod NumOfColumns =\= 0.
+
+checkAdyacentLeft(CurrentPosition, NumOfColumns) :-
+	CurrentPosition mod NumOfColumns =\= 0.
+
+checkAdyacentTop(CurrentPosition, NumOfColumns) :-
+	CurrentPosition >= NumOfColumns.
+
+checkAdyancentBottom(CurrentPosition, GridLength, NumOfColumns) :-
+	BottomPosition is CurrentPosition + NumOfColumns,
+	BottomPosition < GridLength.
+
+checkAdyacentBottomRight(CurrentPosition, GridLength, NumOfColumns) :-
+	checkAdyancentBottom(CurrentPosition, GridLength, NumOfColumns),
+	checkAdyancentRight(CurrentPosition, NumOfColumns).
+
+checkAdyacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) :-
+	checkAdyancentBottom(CurrentPosition, GridLength, NumOfColumns),
+	checkAdyancentLeft(CurrentPosition, NumOfColumns).
+
+checkAdyacentTopRight(CurrentPosition, NumOfColumns) :-
+	checkAdyancentTop(CurrentPosition, NumOfColumns),
+	checkAdyancentRight(CurrentPosition, NumOfColumns).
+
+checkAdyacentTopLeft(CurrentPosition, NumOfColumns) :-
+	checkAdyancentTop(CurrentPosition, NumOfColumns),
+	checkAdyancentLeft(CurrentPosition, NumOfColumns).
