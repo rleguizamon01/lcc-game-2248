@@ -212,29 +212,25 @@ generateRandomBlock(Num) :-
 
 getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) :-
 	Grid = [N | Ns],
+    length(GridOriginal, GridLength),
 	NewPosition is CurrentPosition + 1,
 	flatten(GroupList, GroupListFlatted),
 	(member(CurrentPosition, GroupListFlatted) ->
-		emptyAdjacentGrid(Ns, NumOfColumns, NewPosition, GroupList, EmptyAdjacentGrid) 	
+		getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res) 	
 	;
 		calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, N, [], Group),
 		length(Group, Length), 
 		(Length > 1 -> 
 			append(Group, GroupList, GroupListAux),
-			emptyAdjacentGrid(Ns, NumOfColumns, NewPosition, GroupListAux, EmptyAdjacentGrid)
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupListAux, Res)
 		;	
-			emptyAdjacentGrid(Ns, NumOfColumns, NewPosition, GroupList, EmptyAdjacentGrid)
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res)
 		)
 		
 		
 	),
 	
 	Res = GroupList.
-	
-	
-
-	
-
 
 /*
 	Chequea los adyacentes de un determinado indice y en caso que su valor sea igual al del elemento original,
