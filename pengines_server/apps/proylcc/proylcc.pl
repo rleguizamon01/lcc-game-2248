@@ -206,22 +206,34 @@ generateRandomBlock(Num) :-
 	random(1, 7, X),
 	pow(2, X, Num).
 
+/*
+	Devuelve la lista de grupos que conforman la grilla
+*/
 
-
-emptyAdjacentGrid(Grid, GridOriginal, NumOfColumns, Index, Visited, EmptyAdjacentGrid) :-
+getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) :-
 	Grid = [N | Ns],
-	(
-		(
-			member(Index, Visited)
-		);
-		(
-			calcularListaAdyacentes(Index, NumOfColumns, ListaAdyacentes),
-			revisarSiHayAdyacenteIgual(GridOriginal, N, ListaAdyacentes, ListaAdyacentesIguales),
-			append(ListaAdyacentesIguales, Visited)
+	NewPosition is CurrentPosition + 1,
+	flatten(GroupList, GroupListFlatted),
+	(member(CurrentPosition, GroupListFlatted) ->
+		emptyAdjacentGrid(Ns, NumOfColumns, NewPosition, GroupList, EmptyAdjacentGrid) 	
+	;
+		calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, N, [], Group),
+		length(Group, Length), 
+		(Length > 1 -> 
+			append(Group, GroupList, GroupListAux),
+			emptyAdjacentGrid(Ns, NumOfColumns, NewPosition, GroupListAux, EmptyAdjacentGrid)
+		;	
+			emptyAdjacentGrid(Ns, NumOfColumns, NewPosition, GroupList, EmptyAdjacentGrid)
 		)
+		
+		
 	),
-	NewIndex is Index + 1,
-	emptyAdjacentGrid(Ns, NumOfColumns, NewIndex, Visited, EmptyAdjacentGrid).
+	
+	Res = GroupList.
+	
+	
+
+	
 
 
 /*
@@ -258,46 +270,98 @@ revisarSiHayAdyacenteIgual(GridOriginal, N, ListaAdyacentes, ListaAdyacentesIgua
 	Para un determinado indice, devuelve una lista de sus adyacentes
 */	
 
-calcularListaAdyacentes(Index, NumOfColumns, Res) :-
-	Res = [],
-	(X1 is Index + 1, X > 0, append([X1], Res)),
-	(X2 is Index - 1, Y > 0, append([X2], Res)),
-	(X3 is Index + NumOfColumns, append([X3], Res)),
-	(X4 is Index - NumOfColumns, X4 > 0, append([X4], Res)),
-	(X5 is Index - NumOfColumns, X5 > 0, append([X5], Res)),
-	(X6 is Index - NumOfColumns, X6 > 0, append([X6], Res)),
-	(X7 is Index - NumOfColumns, X7 > 0, append([X7], Res)),
-	(X8 is Index - NumOfColumns, X8 > 0, append([X8], Res)).
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Valor, Group, Res) :-
+	append([CurrentPosition], Group, GroupAux),
+	(checkAdjacentRight(CurrentPosition, NumOfColumns) ->
+		X1 is CurrentPosition + 1,
+		\+member(X1, GroupAux),
+		nth0(X1, GridOriginal, Elem1), 
+		Elem1 =:= Valor, 
+		calcularListaAdyacentes(X1, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+	(checkAdjacentLeft(CurrentPosition, NumOfColumns) ->
+		X2 is CurrentPosition - 1,
+		\+member(X2, GroupAux),
+		nth0(X2, GridOriginal, Elem2),
+		Elem2 =:= Valor,
+		calcularListaAdyacentes(X2, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+
+	(checkAdjacentTop(CurrentPosition, NumOfColumns) ->
+		X3 is CurrentPosition - NumOfColumns,
+		\+member(X3, GroupAux),
+		nth0(X3, GridOriginal, Elem3),
+		Elem3 =:= Valor,
+		calcularListaAdyacentes(X3, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+
+	(checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns) ->
+		X4 is CurrentPosition + NumOfColumns,
+		\+member(X4, GroupAux),
+		nth0(X4, GridOriginal, Elem4),
+		Elem4 =:= Valor,
+		calcularListaAdyacentes(X4, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+	(checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns) ->
+		X5 is CurrentPosition + NumOfColumns + 1,
+		nth0(X5, GridOriginal, Elem5),
+		\+member(X5, GroupAux),
+		Elem5 =:= Valor,
+		calcularListaAdyacentes(X5, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+	(checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) ->
+		X6 is CurrentPosition + NumOfColumns - 1,
+		\+member(X6, GroupAux),
+		nth0(X6, GridOriginal, Elem6),
+		Elem6 =:= Valor,
+		calcularListaAdyacentes(X6, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+	(checkAdjacentTopRight(CurrentPosition, NumOfColumns) ->
+		X7 is CurrentPosition - NumOfColumns + 1,
+		\+member(X7, GroupAux),
+		nth0(X7, GridOriginal, Elem7),
+		Elem7 =:= Valor,
+		calcularListaAdyacentes(X7, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+	(checkAdjacentTopLeft(CurrentPosition, NumOfColumns) ->
+		X8 is CurrentPosition - NumOfColumns - 1,
+		\+member(X8, GroupAux),
+		nth0(X8, GridOriginal, Elem8),
+		Elem8 =:= Valor,
+		calcularListaAdyacentes(X8, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
+	),
+	Res = GroupAux.
+
 
 
 /* Booster colapsar iguales */
 
-checkAdyacentRight(CurrentPosition, NumOfColumns) :-
+checkAdjacentRight(CurrentPosition, NumOfColumns) :-
 	RightPosition is CurrentPosition + 1,
 	RightPosition mod NumOfColumns =\= 0.
 
-checkAdyacentLeft(CurrentPosition, NumOfColumns) :-
+checkAdjacentLeft(CurrentPosition, NumOfColumns) :-
 	CurrentPosition mod NumOfColumns =\= 0.
 
-checkAdyacentTop(CurrentPosition, NumOfColumns) :-
+checkAdjacentTop(CurrentPosition, NumOfColumns) :-
 	CurrentPosition >= NumOfColumns.
 
-checkAdyancentBottom(CurrentPosition, GridLength, NumOfColumns) :-
+checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns) :-
 	BottomPosition is CurrentPosition + NumOfColumns,
 	BottomPosition < GridLength.
 
-checkAdyacentBottomRight(CurrentPosition, GridLength, NumOfColumns) :-
-	checkAdyancentBottom(CurrentPosition, GridLength, NumOfColumns),
-	checkAdyancentRight(CurrentPosition, NumOfColumns).
+checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns) :-
+	checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
+	checkAdjacentRight(CurrentPosition, NumOfColumns).
 
-checkAdyacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) :-
-	checkAdyancentBottom(CurrentPosition, GridLength, NumOfColumns),
-	checkAdyancentLeft(CurrentPosition, NumOfColumns).
+checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) :-
+	checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
+	checkAdjacentLeft(CurrentPosition, NumOfColumns).
 
-checkAdyacentTopRight(CurrentPosition, NumOfColumns) :-
-	checkAdyancentTop(CurrentPosition, NumOfColumns),
-	checkAdyancentRight(CurrentPosition, NumOfColumns).
+checkAdjacentTopRight(CurrentPosition, NumOfColumns) :-
+	checkAdjacentTop(CurrentPosition, NumOfColumns),
+	checkAdjacentRight(CurrentPosition, NumOfColumns).
 
-checkAdyacentTopLeft(CurrentPosition, NumOfColumns) :-
-	checkAdyancentTop(CurrentPosition, NumOfColumns),
-	checkAdyancentLeft(CurrentPosition, NumOfColumns).
+checkAdjacentTopLeft(CurrentPosition, NumOfColumns) :-
+	checkAdjacentTop(CurrentPosition, NumOfColumns),
+	checkAdjacentLeft(CurrentPosition, NumOfColumns).
