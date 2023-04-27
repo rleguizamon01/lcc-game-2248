@@ -205,3 +205,66 @@ replaceZeros([N | Ns], Result) :-
 generateRandomBlock(Num) :-
 	random(1, 7, X),
 	pow(2, X, Num).
+
+
+
+emptyAdjacentGrid(Grid, GridOriginal, NumOfColumns, Index, Visited, EmptyAdjacentGrid) :-
+	Grid = [N | Ns],
+	(
+		(
+			member(Index, Visited)
+		);
+		(
+			calcularListaAdyacentes(Index, NumOfColumns, ListaAdyacentes),
+			revisarSiHayAdyacenteIgual(GridOriginal, N, ListaAdyacentes, ListaAdyacentesIguales),
+			append(ListaAdyacentesIguales, Visited)
+		)
+	),
+	NewIndex is Index + 1,
+	emptyAdjacentGrid(Ns, NumOfColumns, NewIndex, Visited, EmptyAdjacentGrid).
+
+
+/*
+	Chequea los adyacentes de un determinado indice y en caso que su valor sea igual al del elemento original,
+	los agrega a una lista de adyacentes a eliminar
+*/
+
+revisarSiHayAdyacenteIgual(GridOriginal, N, [H], [H]) :-
+	nth0(H, GridOriginal, Elem),
+	Elem =:= N.
+
+
+revisarSiHayAdyacenteIgual(GridOriginal, N, [H], []) :-
+	nth0(H, GridOriginal, Elem),
+	Elem =\= N.
+
+
+
+revisarSiHayAdyacenteIgual(GridOriginal, N, ListaAdyacentes, ListaAdyacentesIguales) :-
+	ListaAdyacentes = [H | T],
+	nth0(H, GridOriginal, Elem),
+	(
+		(Elem =:= N,
+		revisarSiHayAdyacenteIgual(GridOriginal, N, T, LAIgualesAux),
+		append([H], LAIgualesAux, ListaAdyacentesIguales));
+
+		(Elem =\= N,
+		revisarSiHayAdyacenteIgual(GridOriginal, N, T, ListaAdyacentesIguales)
+		)
+		
+	).
+
+/*
+	Para un determinado indice, devuelve una lista de sus adyacentes
+*/	
+
+calcularListaAdyacentes(Index, NumOfColumns, Res) :-
+	Res = [],
+	(X1 is Index + 1, X > 0, append([X1], Res)),
+	(X2 is Index - 1, Y > 0, append([X2], Res)),
+	(X3 is Index + NumOfColumns, append([X3], Res)),
+	(X4 is Index - NumOfColumns, X4 > 0, append([X4], Res)),
+	(X5 is Index - NumOfColumns, X5 > 0, append([X5], Res)),
+	(X6 is Index - NumOfColumns, X6 > 0, append([X6], Res)),
+	(X7 is Index - NumOfColumns, X7 > 0, append([X7], Res)),
+	(X8 is Index - NumOfColumns, X8 > 0, append([X8], Res)).
