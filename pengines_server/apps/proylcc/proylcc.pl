@@ -206,9 +206,54 @@ generateRandomBlock(Num) :-
 	random(1, 7, X),
 	pow(2, X, Num).
 
+
 /*
-	Devuelve la lista de grupos que conforman la grilla
+	RGrids es la lista de grillas representando el efecto, en etapas, de eliminar todos los grupos,
+	poner los bloques correspondientes a cada grupo y aplicar la gravedad 
+
 */
+
+booster(Grid, NumOfColumns, RGrids) :-
+	getGroupList(Grid, Grid, NumOfColumns, 0, [], GroupList),
+	flatten(GroupList, GroupListFlatted),
+	newBlocksList(Grid, GroupList, [], NewBlocksList),
+	emptyPathGrid(Grid, GroupListFlatted, 0, EmptyBoosterGrid),
+
+	emptyBoosterGridWithBlocks(Grid, GroupList, NewBlocksList, EmptyBoosterGridWithBlocks),
+	gridWithGravityApplied(EmptyBoosterGridWithBlocks, NumOfColumns, GridWithGravity),
+	RGrids = [EmptyBoosterGrid, EmptyBoosterGridWithBlocks, GridWithGravity].
+
+
+
+/*
+	Devuelve la grilla con los bloques generados por cada grupo eliminado
+*/
+emptyBoosterGridWithBlocks(Grid, [], [], Grid).
+
+
+emptyBoosterGridWithBlocks(Grid, [G | Gs], [S | Ss], EmptyBoosterGridWithBlocks) :-
+	max_list(G, BlockIndex),
+	replaceValueInGridPosition(Grid, BlockIndex, S, NewGrid),
+	emptyBoosterGridWithBlocks(NewGrid, Gs, Ss, EmptyBoosterGridWithBlocks).
+
+/*
+	Devuelve una lista con el valor de los bloques a generar correspondientes a cada grupo
+*/
+newBlocksList(Grid, [], NewBlocksList, NewBlocksList).
+
+
+newBlocksList(Grid, [G | Gs], NewBlocksList, Res) :-
+	sumOfValuesInPath(Grid, G, SumOfPathValue),
+	smallerPow2GreaterOrEqualThan(SumOfPathValue, NewBlock).
+	append(NewBlock, NewBlocksList, NewBlocksListAux),
+	newBlocksList(Grid, Gs, NewBlocksListAux, Res).
+
+
+/*
+	Devuelve la lista de grupos adyacentes en la grilla. Cada grupo es una lista conformada por los indices de las posiciones
+*/
+
+getGroupList([], _GridOriginal, _NumOfColumns, _CurrentPosition, GroupList, GroupList).
 
 getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) :-
 	Grid = [N | Ns],
@@ -216,117 +261,172 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) 
 	NewPosition is CurrentPosition + 1,
 	flatten(GroupList, GroupListFlatted),
 	(member(CurrentPosition, GroupListFlatted) ->
-		getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res) 	
+		getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, ResAux) 	
 	;
-		calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, N, [], Group),
+		calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], N, [], Group),
 		length(Group, Length), 
 		(Length > 1 -> 
-			append(Group, GroupList, GroupListAux),
-			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupListAux, Res)
-		;	
-			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res)
+			append([Group], GroupList, GroupListAux),
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupListAux, ResAux)
+           
+        ;	
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, ResAux)
 		)
 		
 		
 	),
+    Res = ResAux.
 	
-	Res = GroupList.
-
-/*
-	Chequea los adyacentes de un determinado indice y en caso que su valor sea igual al del elemento original,
-	los agrega a una lista de adyacentes a eliminar
-*/
-
-revisarSiHayAdyacenteIgual(GridOriginal, N, [H], [H]) :-
-	nth0(H, GridOriginal, Elem),
-	Elem =:= N.
-
-
-revisarSiHayAdyacenteIgual(GridOriginal, N, [H], []) :-
-	nth0(H, GridOriginal, Elem),
-	Elem =\= N.
+	
 
 
 
-revisarSiHayAdyacenteIgual(GridOriginal, N, ListaAdyacentes, ListaAdyacentesIguales) :-
-	ListaAdyacentes = [H | T],
-	nth0(H, GridOriginal, Elem),
-	(
-		(Elem =:= N,
-		revisarSiHayAdyacenteIgual(GridOriginal, N, T, LAIgualesAux),
-		append([H], LAIgualesAux, ListaAdyacentesIguales));
+calcularListaAdyacentes(_CurrentPosition, _GridLength, _NumOfColumns, _GridOriginal, [], _Valor, _Group, []).
 
-		(Elem =\= N,
-		revisarSiHayAdyacenteIgual(GridOriginal, N, T, ListaAdyacentesIguales)
-		)
-		
-	).
+	
 
-/*
-	Para un determinado indice, devuelve una lista de sus adyacentes
-*/	
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+	X =:= 1, 
+    append([CurrentPosition], Group, GroupAux),
+    
+           ((checkAdjacentRight(CurrentPosition, NumOfColumns),
+             X1 is CurrentPosition + 1,
+              (
+              	(\+member(X1, GroupAux),
+                nth0(X1, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X1, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, GroupAux, ResAux));
+             
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupAux, ResAux)
 
-calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Valor, Group, Res) :-
-	append([CurrentPosition], Group, GroupAux),
-	(checkAdjacentRight(CurrentPosition, NumOfColumns) ->
-		X1 is CurrentPosition + 1,
-		\+member(X1, GroupAux),
-		nth0(X1, GridOriginal, Elem1), 
-		Elem1 =:= Valor, 
-		calcularListaAdyacentes(X1, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
-	(checkAdjacentLeft(CurrentPosition, NumOfColumns) ->
-		X2 is CurrentPosition - 1,
-		\+member(X2, GroupAux),
-		nth0(X2, GridOriginal, Elem2),
-		Elem2 =:= Valor,
-		calcularListaAdyacentes(X2, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupAux, ResAux)
+               	 
+            ),
+    Res = ResAux.
 
-	(checkAdjacentTop(CurrentPosition, NumOfColumns) ->
-		X3 is CurrentPosition - NumOfColumns,
-		\+member(X3, GroupAux),
-		nth0(X3, GridOriginal, Elem3),
-		Elem3 =:= Valor,
-		calcularListaAdyacentes(X3, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
+    
 
-	(checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns) ->
-		X4 is CurrentPosition + NumOfColumns,
-		\+member(X4, GroupAux),
-		nth0(X4, GridOriginal, Elem4),
-		Elem4 =:= Valor,
-		calcularListaAdyacentes(X4, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
-	(checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns) ->
-		X5 is CurrentPosition + NumOfColumns + 1,
-		nth0(X5, GridOriginal, Elem5),
-		\+member(X5, GroupAux),
-		Elem5 =:= Valor,
-		calcularListaAdyacentes(X5, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
-	(checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) ->
-		X6 is CurrentPosition + NumOfColumns - 1,
-		\+member(X6, GroupAux),
-		nth0(X6, GridOriginal, Elem6),
-		Elem6 =:= Valor,
-		calcularListaAdyacentes(X6, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
-	(checkAdjacentTopRight(CurrentPosition, NumOfColumns) ->
-		X7 is CurrentPosition - NumOfColumns + 1,
-		\+member(X7, GroupAux),
-		nth0(X7, GridOriginal, Elem7),
-		Elem7 =:= Valor,
-		calcularListaAdyacentes(X7, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
-	(checkAdjacentTopLeft(CurrentPosition, NumOfColumns) ->
-		X8 is CurrentPosition - NumOfColumns - 1,
-		\+member(X8, GroupAux),
-		nth0(X8, GridOriginal, Elem8),
-		Elem8 =:= Valor,
-		calcularListaAdyacentes(X8, GridLength, NumOfColumns, GridOriginal, Valor, GroupAux, Res)
-	),
-	Res = GroupAux.
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+	X =:= 2,
+           ((checkAdjacentLeft(CurrentPosition, NumOfColumns),
+             X2 is CurrentPosition - 1,
+              (
+              	(\+member(X2, Group),
+                nth0(X2, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X2, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
+              
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+            ),
+    Res = ResAux.
+
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+   	X =:= 3,
+           ((checkAdjacentTop(CurrentPosition, NumOfColumns),
+             X3 is CurrentPosition - NumOfColumns,
+              (
+              	(\+member(X3, Group),
+                nth0(X3, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X3, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
+              
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+            ),
+    Res = ResAux.
+
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+    X =:= 4,
+           ((checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
+             X4 is CurrentPosition + NumOfColumns,
+              (
+              	(\+member(X4, Group),
+                nth0(X4, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X4, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
+              
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+            ),
+    Res = ResAux.
+
+
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+    X =:= 5, 
+           ((checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns),
+             X5 is CurrentPosition + NumOfColumns + 1,
+              (
+              	(\+member(X5, Group),
+                nth0(X5, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X5, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
+              
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+            ),
+    Res = ResAux.
+
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+    X =:= 6, 
+           ((checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns),
+             X6 is CurrentPosition + NumOfColumns - 1,
+              (
+              	(\+member(X6, Group),
+                nth0(X6, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X6, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
+              
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+            ), 
+    Res = ResAux.
+    
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+    X =:= 7,
+           ((checkAdjacentTopRight(CurrentPosition, NumOfColumns),
+             X7 is CurrentPosition - NumOfColumns + 1,
+              (
+              	(\+member(X7, Group),
+                nth0(X7, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X7, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
+              
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+            ),
+   Res = ResAux.
+
+calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Valor, Group, Res) :-
+    X =:= 8,
+           ((checkAdjacentTopLeft(CurrentPosition, NumOfColumns),
+             X8 is CurrentPosition - NumOfColumns - 1,
+              (
+              	(\+member(X8, Group),
+                nth0(X8, GridOriginal, Elem1), 
+                Elem1 =:= Valor, 
+                calcularListaAdyacentes(X8, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
+              
+              	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+              )
+            );
+                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+            ), 
+    append(Group, ResAux, Res).
 
 
 
