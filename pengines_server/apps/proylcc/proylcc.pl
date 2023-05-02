@@ -111,15 +111,7 @@ lastBlockValue(Grid, PositionPath, LastBlockValue) :-
 */
 
 smallerPow2GreaterOrEqualThan(Num, Resultado) :-
-	Log2Num is floor(log(Num)/log(2)),
-	pow(2, Log2Num, ResPow),
-	(
-    	ResPow =:= Num,
-		Resultado = Num
-    ;
-    	Log2NumAux is Log2Num + 1,
-    	pow(2, Log2NumAux, Resultado)
-    ).
+	Resultado is 2 ^ ceil(log(Num) / log(2)).
 
 /* Implementaciones de gravedad */
 
@@ -218,8 +210,7 @@ booster(Grid, NumOfColumns, RGrids) :-
 	flatten(GroupList, GroupListFlatted),
 	newBlocksList(Grid, GroupList, [], NewBlocksList),
 	emptyPathGrid(Grid, GroupListFlatted, 0, EmptyBoosterGrid),
-
-	emptyBoosterGridWithBlocks(Grid, GroupList, NewBlocksList, EmptyBoosterGridWithBlocks),
+	emptyBoosterGridWithBlocks(EmptyBoosterGrid, GroupList, NewBlocksList, EmptyBoosterGridWithBlocks),
 	gridWithGravityApplied(EmptyBoosterGridWithBlocks, NumOfColumns, GridWithGravity),
 	RGrids = [EmptyBoosterGrid, EmptyBoosterGridWithBlocks, GridWithGravity].
 
@@ -244,13 +235,14 @@ newBlocksList(Grid, [], NewBlocksList, NewBlocksList).
 
 newBlocksList(Grid, [G | Gs], NewBlocksList, Res) :-
 	sumOfValuesInPath(Grid, G, SumOfPathValue),
-	smallerPow2GreaterOrEqualThan(SumOfPathValue, NewBlock).
-	append(NewBlock, NewBlocksList, NewBlocksListAux),
+	smallerPow2GreaterOrEqualThan(SumOfPathValue, NewBlock),
+	append(NewBlocksList, [NewBlock], NewBlocksListAux),
 	newBlocksList(Grid, Gs, NewBlocksListAux, Res).
 
 
 /*
-	Devuelve la lista de grupos adyacentes en la grilla. Cada grupo es una lista conformada por los indices de las posiciones
+	Devuelve la lista de grupos adyacentes en la grilla. 
+    Cada grupo es una lista conformada por los indices de las posiciones
 */
 
 getGroupList([], _GridOriginal, _NumOfColumns, _CurrentPosition, GroupList, GroupList).
@@ -261,21 +253,18 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) 
 	NewPosition is CurrentPosition + 1,
 	flatten(GroupList, GroupListFlatted),
 	(member(CurrentPosition, GroupListFlatted) ->
-		getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, ResAux) 	
+		getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res) 	
 	;
 		calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], N, [], Group),
 		length(Group, Length), 
 		(Length > 1 -> 
 			append([Group], GroupList, GroupListAux),
-			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupListAux, ResAux)
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupListAux, Res)
            
         ;	
-			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, ResAux)
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res)
 		)
-		
-		
-	),
-    Res = ResAux.
+	).
 	
 	
 
@@ -293,12 +282,12 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
              X1 is CurrentPosition + 1,
               (
               	(\+member(X1, GroupAux),
-                nth0(X1, GridOriginal, Elem1), 
-                Elem1 =:= Valor, 
-                calcularListaAdyacentes(X1, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, GroupAux, ResAux));
-             
+                nth0(X1, GridOriginal, Elem1),
+                Elem1 =:= Valor,
+                calcularListaAdyacentes(X1, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, GroupAux, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupAux, ResAux)
-
               )
             );
                  calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupAux, ResAux)
@@ -316,8 +305,9 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
               	(\+member(X2, Group),
                 nth0(X2, GridOriginal, Elem1), 
                 Elem1 =:= Valor, 
-                calcularListaAdyacentes(X2, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
-              
+                calcularListaAdyacentes(X2, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
               )
             );
@@ -333,12 +323,13 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
               	(\+member(X3, Group),
                 nth0(X3, GridOriginal, Elem1), 
                 Elem1 =:= Valor, 
-                calcularListaAdyacentes(X3, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
-              
+                calcularListaAdyacentes(X3, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
               )
             );
-                 calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
             ),
     Res = ResAux.
 
@@ -350,8 +341,9 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
               	(\+member(X4, Group),
                 nth0(X4, GridOriginal, Elem1), 
                 Elem1 =:= Valor, 
-                calcularListaAdyacentes(X4, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
-              
+                calcularListaAdyacentes(X4, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
               )
             );
@@ -368,8 +360,9 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
               	(\+member(X5, Group),
                 nth0(X5, GridOriginal, Elem1), 
                 Elem1 =:= Valor, 
-                calcularListaAdyacentes(X5, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
-              
+                calcularListaAdyacentes(X5, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
               )
             );
@@ -385,8 +378,9 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
               	(\+member(X6, Group),
                 nth0(X6, GridOriginal, Elem1), 
                 Elem1 =:= Valor, 
-                calcularListaAdyacentes(X6, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
-              
+                calcularListaAdyacentes(X6, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
               )
             );
@@ -402,8 +396,9 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
               	(\+member(X7, Group),
                 nth0(X7, GridOriginal, Elem1), 
                 Elem1 =:= Valor, 
-                calcularListaAdyacentes(X7, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
-              
+                calcularListaAdyacentes(X7, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
               )
             );
@@ -419,8 +414,9 @@ calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal,
               	(\+member(X8, Group),
                 nth0(X8, GridOriginal, Elem1), 
                 Elem1 =:= Valor, 
-                calcularListaAdyacentes(X8, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, ResAux));
-              
+                calcularListaAdyacentes(X8, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Valor, Group, GroupRes),
+                calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, GroupRes, ResAux))
+              ;
               	calcularListaAdyacentes(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Valor, Group, ResAux)
               )
             );
