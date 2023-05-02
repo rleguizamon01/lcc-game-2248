@@ -1,6 +1,7 @@
 body {
   font: 14px "Century Gothic", Futura, sans-serif;
   margin: 20px;
+  background-color: black;
 }
 
 .game {
@@ -17,15 +18,18 @@ body {
   width: 100%;
 }
 
-.pathScore {
-  margin: 10px;
-  visibility: hidden;
-  display: none;
+.scoreSquare {
+  height: 41px;
+  width: 41px;
+  font-size: 20px !important;
+  margin: 6px !important;
+  cursor: auto !important;
 } 
 
 .score {
   margin: 10px;
   font-size: 25px;
+  color: white;
 }
 
 .board {
@@ -48,6 +52,14 @@ body {
   font-size: 25px;
   color: white;
   font-family: Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+
+.booster {
+  height: 50px;
+  width: 50px;
+  border: white 1px solid;
+  border-radius: 6px;
   cursor: pointer;
 }
 
