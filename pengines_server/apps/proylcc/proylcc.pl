@@ -22,7 +22,6 @@ join(Grid, NumOfColumns, Path, RGrids) :-
  * En base al listado de [X, Y] de elementos del camino, devuelve una lista de enteros que corresponden
  * a los índices/posiciones en la grilla.
  */
-
 positionPath(Path, NumOfColumns, PositionPath) :-
     positionPathAux(Path, NumOfColumns, [], PositionPath).
 
@@ -38,7 +37,6 @@ positionPathAux([[N | Ns] | T], NumOfColumns, PositionPath, Result) :-
  * Recorre la grilla y verifica si la posición actual de la grilla es miembro de la lista de posiciones del camino.
  * En caso de serlo, se modifica el valor del elemento por 0.
  */
-
 gridWithEmptyPath([_N], PositionPath, CurrentPosition, EmptyGrid) :- 
 	member(CurrentPosition, PositionPath),
 	EmptyGrid = [0].
@@ -62,12 +60,10 @@ gridWithEmptyPath([N | Ns], PositionPath, CurrentPosition, EmptyGrid) :-
 /**
  * Devuelve la suma de valores de la grilla en un determinado camino 
  */
-
 sumOfValuesInPath(Grid, PositionPath, Result) :-
 	sumOfValuesInPathAux(Grid, PositionPath, 0, 0, Result).
 
-sumOfValuesInPathAux([], _, _, SummedValues, Result) :-
-	Result = SummedValues.
+sumOfValuesInPathAux([], _, _, SummedValues, SummedValues).
 
 sumOfValuesInPathAux([G | Gs], PositionPath, CurrentGridPosition, SummedValues, Result) :-
 	NextGridPosition is CurrentGridPosition + 1,
@@ -81,7 +77,6 @@ sumOfValuesInPathAux([G | Gs], PositionPath, CurrentGridPosition, SummedValues, 
 /**
  * Devuelve el valor que debería tener el bloque resultante
  */
-
 lastBlockValue(Grid, PositionPath, LastBlockValue) :-
 	sumOfValuesInPath(Grid, PositionPath, SumOfPathValue),
 	smallerPow2GreaterOrEqualThan(SumOfPathValue, LastBlockValue).
@@ -89,14 +84,12 @@ lastBlockValue(Grid, PositionPath, LastBlockValue) :-
 /**
  * Calcula la potencia de dos mas cercana o igual a un determinado numero
  */
-
 smallerPow2GreaterOrEqualThan(Num, Result) :-
 	Result is 2 ^ ceil(log(Num) / log(2)).
 
 /**
  * Devuelve una grilla luego de aplicar gravedad
  */
-
 gridWithGravity(GridWithEmptyPath, NumOfColumns, Result) :-
 	reverse(GridWithEmptyPath, ReversedGrid),
 	gridWithGravityAppliedAux(ReversedGrid, NumOfColumns, 0, [], ResultAux1),
@@ -126,7 +119,6 @@ gridWithGravityAppliedAux(Grid, NumOfColumns, CurrentPosition, NewGrid, Result) 
  * Devuelve la posición del bloque no vacío más cercano dentro de la misma columna.
  * Si no existe un bloque por encima no vacío, devuelve 0
  */
-
 aboveBlockPosition(Grid, NumOfColumns, Result) :-
 	aboveBlockPositionAux(Grid, NumOfColumns, NumOfColumns, Result).
 
@@ -147,7 +139,6 @@ aboveBlockPositionAux(Grid, CurrentPosition, NumOfColumns, Result) :-
 /**
  * Devuelve una lista que reemplaza el valor en cierta posición por un nuevo valor
  */
-
 replaceValueInGridPosition(List, Position, NewValue, Result) :-
 	nth0(Position, List, _, ListRemainder),
 	nth0(Position, Result, NewValue, ListRemainder).
@@ -155,7 +146,6 @@ replaceValueInGridPosition(List, Position, NewValue, Result) :-
 /**
  * Devuelve una lista que reemplaza todos los ceros por valores aleatorios que sean potencia de 2
  */
-
 replaceZerosWithRandomValue([N], Result) :-
 	((N =:= 0) ->
 		generateRandomValue(X),
@@ -176,7 +166,6 @@ replaceZerosWithRandomValue([N | Ns], Result) :-
 /**
  * Genera un valor aleatorio que sea potencia de 2
  */
-
 generateRandomValue(Num) :-
 	random(1, 7, X),
 	pow(2, X, Num).
@@ -185,7 +174,6 @@ generateRandomValue(Num) :-
  * Devuelve una lista de grillas que representan el efecto, en etapas, de eliminar todos los grupos,
  * poner los bloques correspondientes a cada grupo y aplicar la gravedad.
  */
-
 booster(Grid, NumOfColumns, RGrids) :-
 	getGroupList(Grid, Grid, NumOfColumns, 0, [], GroupList),
 	flatten(GroupList, GroupListFlattened),
@@ -198,7 +186,6 @@ booster(Grid, NumOfColumns, RGrids) :-
 /**
  * Devuelve la grilla con los bloques generados por cada grupo eliminado
  */
-
 gridWithBoosterBlocks(Grid, [], [], Grid).
 
 gridWithBoosterBlocks(Grid, [G | Gs], [S | Ss], EmptyBoosterGridWithBlocks) :-
@@ -209,7 +196,6 @@ gridWithBoosterBlocks(Grid, [G | Gs], [S | Ss], EmptyBoosterGridWithBlocks) :-
 /**
  * Devuelve una lista con los valores de los bloques a generar correspondientes a cada grupo.
  */
-
 valuesFromGroupsList(Grid, [], ValuesList, ValuesList).
 
 valuesFromGroupsList(Grid, [G | Gs], ValuesList, Res) :-
@@ -222,7 +208,6 @@ valuesFromGroupsList(Grid, [G | Gs], ValuesList, Res) :-
  * Devuelve la lista de grupos adyacentes en la grilla. 
  * Cada grupo es una lista de índices/posiciones de bloques adyacentes que conforman un grupo.
  */
-
 getGroupList([], _GridOriginal, _NumOfColumns, _CurrentPosition, GroupList, GroupList).
 
 getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) :-
@@ -249,7 +234,6 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) 
  * En caso de que no hayan adyacentes con valores iguales, devuelve una lista conformada 
  * únicamente por la posición actual.
  */
-
 adjacentPositionsList(_CurrentPosition, _GridLength, _NumOfColumns, _GridOriginal, [], _Valor, _Group, []).
 
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
