@@ -67,11 +67,13 @@ sumOfValuesInPathAux([], _, _, SummedValues, SummedValues).
 
 sumOfValuesInPathAux([G | Gs], PositionPath, CurrentGridPosition, SummedValues, Result) :-
 	NextGridPosition is CurrentGridPosition + 1,
-	(member(CurrentGridPosition, PositionPath) ->
+	(
+		(member(CurrentGridPosition, PositionPath),
 		SummedValuesAux is SummedValues + G,
-		sumOfValuesInPathAux(Gs, PositionPath, NextGridPosition, SummedValuesAux, Result)
+		sumOfValuesInPathAux(Gs, PositionPath, NextGridPosition, SummedValuesAux, Result))
 	;
-		sumOfValuesInPathAux(Gs, PositionPath, NextGridPosition, SummedValues, Result)
+		(\+member(CurrentGridPosition, PositionPath),
+		sumOfValuesInPathAux(Gs, PositionPath, NextGridPosition, SummedValues, Result))
 	).
 	
 /**
@@ -103,16 +105,18 @@ gridWithGravityAppliedAux(Grid, NumOfColumns, CurrentPosition, NewGrid, Result) 
 	Grid = [CurrentBlock | T],
 	NextPosition is CurrentPosition + 1,
 	% Si el bloque actual está vacío
-	(CurrentBlock =:= 0 ->
+	(
+		(CurrentBlock =:= 0,
 		aboveBlockPosition(Grid, NumOfColumns, AboveBlockPosition),
 		nth0(AboveBlockPosition, Grid, AboveBlockValue),
 		replaceValueInGridPosition(Grid, AboveBlockPosition, 0, GridWithAboveBlockReplaced),
         append(NewGrid, [AboveBlockValue], NewGridAppended),
 		GridWithAboveBlockReplaced = [_ | TAux],
-		gridWithGravityAppliedAux(TAux, NumOfColumns, NextPosition, NewGridAppended, Result)
+		gridWithGravityAppliedAux(TAux, NumOfColumns, NextPosition, NewGridAppended, Result))
 	;
+		(CurrentBlock =\= 0,
 		append(NewGrid, [CurrentBlock], NewGridAppended),
-		gridWithGravityAppliedAux(T, NumOfColumns, NextPosition, NewGridAppended, Result)
+		gridWithGravityAppliedAux(T, NumOfColumns, NextPosition, NewGridAppended, Result))
 	).
 
 /**
@@ -130,10 +134,12 @@ aboveBlockPositionAux(Grid, CurrentPosition, _, Result) :-
 aboveBlockPositionAux(Grid, CurrentPosition, NumOfColumns, Result) :-
 	nth0(CurrentPosition, Grid, Value),
 	NextPosition is CurrentPosition + NumOfColumns,
-	((Value =:= 0) ->
-		aboveBlockPositionAux(Grid, NextPosition, NumOfColumns, Result)
+	(
+		(Value =:= 0,
+		aboveBlockPositionAux(Grid, NextPosition, NumOfColumns, Result))
 	;
-		Result = CurrentPosition
+		(Value =\= 0,
+		Result = CurrentPosition)
 	).
 
 /**
@@ -147,20 +153,24 @@ replaceValueInGridPosition(List, Position, NewValue, Result) :-
  * Devuelve una lista que reemplaza todos los ceros por valores aleatorios que sean potencia de 2
  */
 replaceZerosWithRandomValue([N], Result) :-
-	((N =:= 0) ->
+	(
+		(N =:= 0,
 		generateRandomValue(X),
-		Result = [X]
+		Result = [X])
 	;
-		Result = [N]
+		(N =\= 0,
+		Result = [N])
 	).
 
 replaceZerosWithRandomValue([N | Ns], Result) :-
 	replaceZerosWithRandomValue(Ns, ResultAux),
-	((N =:= 0) ->
+	(
+		(N =:= 0,
 		generateRandomValue(X),
-		append([X], ResultAux, Result)
+		append([X], ResultAux, Result))
 	;
-		append([N], ResultAux, Result)
+		(N =\= 0,
+		append([N], ResultAux, Result))
 	).
 
 /**
@@ -196,7 +206,7 @@ gridWithBoosterBlocks(Grid, [G | Gs], [S | Ss], EmptyBoosterGridWithBlocks) :-
 /**
  * Devuelve una lista con los valores de los bloques a generar correspondientes a cada grupo.
  */
-valuesFromGroupsList(Grid, [], ValuesList, ValuesList).
+valuesFromGroupsList(_, [], ValuesList, ValuesList).
 
 valuesFromGroupsList(Grid, [G | Gs], ValuesList, Res) :-
 	sumOfValuesInPath(Grid, G, SumOfPathValue),
@@ -215,18 +225,21 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) 
     length(GridOriginal, GridLength),
 	NewPosition is CurrentPosition + 1,
 	flatten(GroupList, GroupListFlattened),
-	(member(CurrentPosition, GroupListFlattened) ->
-		getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res) 	
+	(
+		(member(CurrentPosition, GroupListFlattened),
+		getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res))
 	;
+		(\+member(CurrentPosition, GroupListFlattened),
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], N, [], Group),
 		length(Group, Length), 
-		(Length > 1 -> 
+		(
+			(Length > 1,
 			append([Group], GroupList, GroupListAux),
-			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupListAux, Res)
-           
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupListAux, Res))
         ;	
-			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res)
-		)
+			(Length =< 1,
+			getGroupList(Ns, GridOriginal, NumOfColumns, NewPosition, GroupList, Res))
+		))
 	).
 
 /**
@@ -387,7 +400,6 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
 /**
  * Dada una posición, verifica si existe un bloque a su derecha.
  */
-
 checkAdjacentRight(CurrentPosition, NumOfColumns) :-
 	RightPosition is CurrentPosition + 1,
 	RightPosition mod NumOfColumns =\= 0.
@@ -395,14 +407,12 @@ checkAdjacentRight(CurrentPosition, NumOfColumns) :-
 /**
  * Dada una posición, verifica si existe un bloque a su izquierda.
  */
-
 checkAdjacentLeft(CurrentPosition, NumOfColumns) :-
 	CurrentPosition mod NumOfColumns =\= 0.
 
 /**
  * Dada una posición, verifica si existe un bloque encima.
  */
-
 checkAdjacentTop(CurrentPosition, NumOfColumns) :-
 	CurrentPosition >= NumOfColumns.
 
@@ -416,7 +426,6 @@ checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns) :-
 /**
  * Dada una posición, verifica si existe un bloque abajo a la derecha.
  */
-
 checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns) :-
 	checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
 	checkAdjacentRight(CurrentPosition, NumOfColumns).
@@ -424,7 +433,6 @@ checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns) :-
 /**
  * Dada una posición, verifica si existe un bloque abajo a la izquierda.
  */
-
 checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) :-
 	checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
 	checkAdjacentLeft(CurrentPosition, NumOfColumns).
@@ -432,7 +440,6 @@ checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) :-
 /**
  * Dada una posición, verifica si existe un bloque arriba a la derecha.
  */
-
 checkAdjacentTopRight(CurrentPosition, NumOfColumns) :-
 	checkAdjacentTop(CurrentPosition, NumOfColumns),
 	checkAdjacentRight(CurrentPosition, NumOfColumns).
@@ -440,7 +447,6 @@ checkAdjacentTopRight(CurrentPosition, NumOfColumns) :-
 /**
  * Dada una posición, verifica si existe un bloque arriba a la izquierda.
  */
-
 checkAdjacentTopLeft(CurrentPosition, NumOfColumns) :-
 	checkAdjacentTop(CurrentPosition, NumOfColumns),
 	checkAdjacentLeft(CurrentPosition, NumOfColumns).
