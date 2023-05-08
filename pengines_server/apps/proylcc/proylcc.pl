@@ -19,6 +19,7 @@ join(Grid, NumOfColumns, Path, RGrids) :-
 	RGrids = [GridWithEmptyPath, GridWithLastBlock, GridWithGravity].
 
 /**
+ * indexPath(+Path, +NumOfColumns, -IndexPath)
  * En base al listado de [X, Y] de elementos del camino, devuelve una lista de enteros que corresponden
  * a los índices/posiciones en la grilla.
  */
@@ -34,8 +35,9 @@ positionPathAux([[N | Ns] | T], NumOfColumns, PositionPath, Result) :-
 
 
 /**
- * Recorre la grilla y verifica si la posición actual de la grilla es miembro de la lista de posiciones del camino.
- * En caso de serlo, se modifica el valor del elemento por 0.
+ *	gridWithEmptyPath(+Grid, +IndexPath, +CurrentIndex, -EmptyGrid) 
+ *	Recorre la grilla y verifica si el índice actual de la grilla es miembro de la lista de índices del camino.
+ * 	En caso de serlo, se modifica el valor del elemento por 0.
  */
 gridWithEmptyPath([_N], PositionPath, CurrentPosition, EmptyGrid) :- 
 	member(CurrentPosition, PositionPath),
@@ -58,6 +60,7 @@ gridWithEmptyPath([N | Ns], PositionPath, CurrentPosition, EmptyGrid) :-
 	append([N], EmptyGridAux, EmptyGrid).
 
 /**
+ * sumOfValuesInPath(+Grid, +IndexPath, -Result)
  * Devuelve la suma de valores de la grilla en un determinado camino 
  */
 sumOfValuesInPath(Grid, PositionPath, Result) :-
@@ -77,6 +80,7 @@ sumOfValuesInPathAux([G | Gs], PositionPath, CurrentGridPosition, SummedValues, 
 	).
 	
 /**
+ * lastBlockValue(+Grid, +IndexPath, -LastBlockValue)
  * Devuelve el valor que debería tener el bloque resultante
  */
 lastBlockValue(Grid, PositionPath, LastBlockValue) :-
@@ -84,12 +88,14 @@ lastBlockValue(Grid, PositionPath, LastBlockValue) :-
 	smallerPow2GreaterOrEqualThan(SumOfPathValue, LastBlockValue).
 
 /**
+ * smallerPow2GreaterOrEqualThan(+Num, -Result)
  * Calcula la potencia de dos mas cercana o igual a un determinado numero
  */
 smallerPow2GreaterOrEqualThan(Num, Result) :-
 	Result is 2 ^ ceil(log(Num) / log(2)).
 
 /**
+ * gridWithGravity(+GridWithEmptyPath, +NumOfColumns, -Result)
  * Devuelve una grilla luego de aplicar gravedad
  */
 gridWithGravity(GridWithEmptyPath, NumOfColumns, Result) :-
@@ -120,7 +126,8 @@ gridWithGravityAppliedAux(Grid, NumOfColumns, CurrentPosition, NewGrid, Result) 
 	).
 
 /**
- * Devuelve la posición del bloque no vacío más cercano dentro de la misma columna.
+ * aboveBlockIndex(+Grid, +NumOfColumns, -Result)
+ * Devuelve el índice del bloque no vacío más cercano dentro de la misma columna.
  * Si no existe un bloque por encima no vacío, devuelve 0
  */
 aboveBlockPosition(Grid, NumOfColumns, Result) :-
@@ -143,13 +150,15 @@ aboveBlockPositionAux(Grid, CurrentPosition, NumOfColumns, Result) :-
 	).
 
 /**
- * Devuelve una lista que reemplaza el valor en cierta posición por un nuevo valor
+ * replaceValueInGridIndex(+List, +Index, +NewValue, -Result)
+ * Devuelve una lista que reemplaza el valor en cierto índice por un nuevo valor
  */
 replaceValueInGridPosition(List, Position, NewValue, Result) :-
 	nth0(Position, List, _, ListRemainder),
 	nth0(Position, Result, NewValue, ListRemainder).
 
 /**
+ * replaceZerosWithRandomValue(+[N], -Result)
  * Devuelve una lista que reemplaza todos los ceros por valores aleatorios que sean potencia de 2
  */
 replaceZerosWithRandomValue([N], Result) :-
@@ -174,6 +183,7 @@ replaceZerosWithRandomValue([N | Ns], Result) :-
 	).
 
 /**
+ * generateRandomValue(-Num)
  * Genera un valor aleatorio que sea potencia de 2
  */
 generateRandomValue(Num) :-
@@ -181,6 +191,7 @@ generateRandomValue(Num) :-
 	pow(2, X, Num).
 
 /**
+ * booster(+Grid, +NumOfColumns, -RGrids)
  * Devuelve una lista de grillas que representan el efecto, en etapas, de eliminar todos los grupos,
  * poner los bloques correspondientes a cada grupo y aplicar la gravedad.
  */
@@ -194,6 +205,7 @@ booster(Grid, NumOfColumns, RGrids) :-
 	RGrids = [GridWithEmptyPath, GridWithBoosterBlocks, GridWithGravity].
 
 /**
+ * gridWithBoosterBlocks(+Grid, +[G | Gs], +[S | Ss], -EmptyBoosterGridWithBlocks)
  * Devuelve la grilla con los bloques generados por cada grupo eliminado
  */
 gridWithBoosterBlocks(Grid, [], [], Grid).
@@ -204,6 +216,7 @@ gridWithBoosterBlocks(Grid, [G | Gs], [S | Ss], EmptyBoosterGridWithBlocks) :-
 	gridWithBoosterBlocks(NewGrid, Gs, Ss, EmptyBoosterGridWithBlocks).
 
 /**
+ * valuesFromGroupsList(+Grid, +[G | Gs], +ValuesList, -Res)
  * Devuelve una lista con los valores de los bloques a generar correspondientes a cada grupo.
  */
 valuesFromGroupsList(_, [], ValuesList, ValuesList).
@@ -215,6 +228,7 @@ valuesFromGroupsList(Grid, [G | Gs], ValuesList, Res) :-
 	valuesFromGroupsList(Grid, Gs, ValuesListAux, Res).
 
 /**
+ * getGroupList(+Grid, +GridOriginal, +NumOfColumns, +CurrentIndex, +GroupList, -Res)
  * Devuelve la lista de grupos adyacentes en la grilla. 
  * Cada grupo es una lista de índices/posiciones de bloques adyacentes que conforman un grupo.
  */
@@ -243,7 +257,8 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentPosition, GroupList, Res) 
 	).
 
 /**
- * Dada una posición, devuelve un listado de índices/posiciones que conforman su grupo.
+ * adjacentIndexesList(+CurrentIndex, +GridLength, +NumOfColumns, +GridOriginal, +[X | Xs], +Value, +Group, -Res)
+ * Dado un índice, devuelve un listado de índices que conforman su grupo.
  * En caso de que no hayan adyacentes con valores iguales, devuelve una lista conformada 
  * únicamente por la posición actual.
  */
@@ -272,17 +287,9 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
     
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
 	X =:= 2,
-	((checkAdjacentLeft(CurrentPosition, NumOfColumns),
-		X2 is CurrentPosition - 1,
-		(
-		(\+member(X2, Group),
-		nth0(X2, GridOriginal, Elem1), 
-		Elem1 =:= Value, 
-		adjacentPositionsList(X2, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-		)
+	((checkAdjacentLeft(CurrentIndex, NumOfColumns),
+		X2 is CurrentIndex - 1,
+		adjacentIndexesListAux(X2, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
 	);
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
 	),
@@ -290,17 +297,9 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
 
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
    	X =:= 3,
-	((checkAdjacentTop(CurrentPosition, NumOfColumns),
-		X3 is CurrentPosition - NumOfColumns,
-		(
-		(\+member(X3, Group),
-		nth0(X3, GridOriginal, Elem1), 
-		Elem1 =:= Value, 
-		adjacentPositionsList(X3, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-		)
+	((checkAdjacentTop(CurrentIndex, NumOfColumns),
+		X3 is CurrentIndex - NumOfColumns,
+		adjacentIndexesListAux(X3, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
 	);
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
 	),
@@ -308,17 +307,9 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
 
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
     X =:= 4,
-	((checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
-		X4 is CurrentPosition + NumOfColumns,
-		(
-		(\+member(X4, Group),
-		nth0(X4, GridOriginal, Elem1), 
-		Elem1 =:= Value, 
-		adjacentPositionsList(X4, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-		)
+	((checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
+		X4 is CurrentIndex + NumOfColumns,
+		adjacentIndexesListAux(X4, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
 	);
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
 	),
@@ -327,17 +318,9 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
 
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
     X =:= 5, 
-	((checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns),
-		X5 is CurrentPosition + NumOfColumns + 1,
-		(
-		(\+member(X5, Group),
-		nth0(X5, GridOriginal, Elem1), 
-		Elem1 =:= Value, 
-		adjacentPositionsList(X5, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-		)
+	((checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
+		X5 is CurrentIndex + NumOfColumns + 1,
+		adjacentIndexesListAux(X5, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
 	);
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
 	),
@@ -345,17 +328,9 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
 
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
     X =:= 6, 
-	((checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns),
-		X6 is CurrentPosition + NumOfColumns - 1,
-		(
-		(\+member(X6, Group),
-		nth0(X6, GridOriginal, Elem1), 
-		Elem1 =:= Value, 
-		adjacentPositionsList(X6, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-		)
+	((checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
+		X6 is CurrentIndex + NumOfColumns - 1,
+		adjacentIndexesListAux(X6, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
 	);
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
 	), 
@@ -363,17 +338,9 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
     
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
     X =:= 7,
-	((checkAdjacentTopRight(CurrentPosition, NumOfColumns),
-		X7 is CurrentPosition - NumOfColumns + 1,
-		(
-		(\+member(X7, Group),
-		nth0(X7, GridOriginal, Elem1), 
-		Elem1 =:= Value, 
-		adjacentPositionsList(X7, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-		)
+	((checkAdjacentTopRight(CurrentIndex, NumOfColumns),
+		X7 is CurrentIndex - NumOfColumns + 1,
+		adjacentIndexesListAux(X7, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
 	);
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
 	),
@@ -381,71 +348,84 @@ adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [
 
 adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
     X =:= 8,
-	((checkAdjacentTopLeft(CurrentPosition, NumOfColumns),
-		X8 is CurrentPosition - NumOfColumns - 1,
-		(
-		(\+member(X8, Group),
-		nth0(X8, GridOriginal, Elem1), 
-		Elem1 =:= Value, 
-		adjacentPositionsList(X8, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-		)
+	((checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
+		X8 is CurrentIndex - NumOfColumns - 1,
+		adjacentIndexesListAux(X8, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
 	);
 		adjacentPositionsList(CurrentPosition, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
 	), 
     append(Group, ResAux, Res).
 
+
+adjacentIndexesListAux(XCheck, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux) :-
+	
+	((\+member(XCheck, Group),
+	nth0(XCheck, GridOriginal, Elem1), 
+	Elem1 =:= Value, 
+	adjacentIndexesList(XCheck, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
+	adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
+	;
+	adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
+	).
+
+
 /**
- * Dada una posición, verifica si existe un bloque a su derecha.
+ * checkAdjacentRight(+CurrentIndex, +NumOfColumns)
+ * Dado un índice, verifica si existe un bloque a su derecha.
  */
 checkAdjacentRight(CurrentPosition, NumOfColumns) :-
 	RightPosition is CurrentPosition + 1,
 	RightPosition mod NumOfColumns =\= 0.
 
 /**
- * Dada una posición, verifica si existe un bloque a su izquierda.
+ * checkAdjacentLeft(+CurrentIndex, +NumOfColumns)
+ * Dado un índice, verifica si existe un bloque a su izquierda.
  */
 checkAdjacentLeft(CurrentPosition, NumOfColumns) :-
 	CurrentPosition mod NumOfColumns =\= 0.
 
 /**
- * Dada una posición, verifica si existe un bloque encima.
+ * checkAdjacentTop(+CurrentIndex, +NumOfColumns)
+ * Dado un índice, verifica si existe un bloque encima.
  */
 checkAdjacentTop(CurrentPosition, NumOfColumns) :-
 	CurrentPosition >= NumOfColumns.
 
 /**
- * Dada una posición, verifica si existe un bloque debajo.
+ * checkAdjacentBottom(+CurrentIndex, +GridLength, +NumOfColumns) 
+ * Dado un índice, verifica si existe un bloque debajo.
  */
 checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns) :-
 	BottomPosition is CurrentPosition + NumOfColumns,
 	BottomPosition < GridLength.
 
 /**
- * Dada una posición, verifica si existe un bloque abajo a la derecha.
+ * checkAdjacentBottomRight(+CurrentIndex, +GridLength, +NumOfColumns)
+ * Dado un índice, verifica si existe un bloque abajo a la derecha.
  */
 checkAdjacentBottomRight(CurrentPosition, GridLength, NumOfColumns) :-
 	checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
 	checkAdjacentRight(CurrentPosition, NumOfColumns).
 
 /**
- * Dada una posición, verifica si existe un bloque abajo a la izquierda.
+ * checkAdjacentBottomLeft(+CurrentIndex, +GridLength, +NumOfColumns)
+ * Dado un índice, verifica si existe un bloque abajo a la izquierda.
  */
 checkAdjacentBottomLeft(CurrentPosition, GridLength, NumOfColumns) :-
 	checkAdjacentBottom(CurrentPosition, GridLength, NumOfColumns),
 	checkAdjacentLeft(CurrentPosition, NumOfColumns).
 
 /**
- * Dada una posición, verifica si existe un bloque arriba a la derecha.
+ * checkAdjacentTopRight(+CurrentIndex, +NumOfColumns)
+ * Dado un índice, verifica si existe un bloque arriba a la derecha.
  */
 checkAdjacentTopRight(CurrentPosition, NumOfColumns) :-
 	checkAdjacentTop(CurrentPosition, NumOfColumns),
 	checkAdjacentRight(CurrentPosition, NumOfColumns).
 
 /**
- * Dada una posición, verifica si existe un bloque arriba a la izquierda.
+ * checkAdjacentTopLeft(+CurrentIndex, +NumOfColumns)
+ * Dado un índice, verifica si existe un bloque arriba a la izquierda.
  */
 checkAdjacentTopLeft(CurrentPosition, NumOfColumns) :-
 	checkAdjacentTop(CurrentPosition, NumOfColumns),
