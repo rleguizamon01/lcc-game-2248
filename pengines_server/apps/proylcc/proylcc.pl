@@ -205,15 +205,15 @@ booster(Grid, NumOfColumns, RGrids) :-
 	RGrids = [GridWithEmptyPath, GridWithBoosterBlocks, GridWithGravity].
 
 /**
- * gridWithBoosterBlocks(+Grid, +[G | Gs], +[S | Ss], -EmptyBoosterGridWithBlocks)
+ * gridWithBoosterBlocks(+Grid, +[G | Gs], +[S | Ss], -GridWithBoosterBlocks)
  * Devuelve la grilla con los bloques generados por cada grupo eliminado
  */
 gridWithBoosterBlocks(Grid, [], [], Grid).
 
-gridWithBoosterBlocks(Grid, [G | Gs], [S | Ss], EmptyBoosterGridWithBlocks) :-
+gridWithBoosterBlocks(Grid, [G | Gs], [S | Ss], GridWithBoosterBlocks) :-
 	max_list(G, BlockIndex),
 	replaceValueInGridIndex(Grid, BlockIndex, S, NewGrid),
-	gridWithBoosterBlocks(NewGrid, Gs, Ss, EmptyBoosterGridWithBlocks).
+	gridWithBoosterBlocks(NewGrid, Gs, Ss, GridWithBoosterBlocks).
 
 /**
  * valuesFromGroupsList(+Grid, +[G | Gs], +ValuesList, -Res)
