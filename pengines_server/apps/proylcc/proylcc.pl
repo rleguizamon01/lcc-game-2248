@@ -391,8 +391,28 @@ checkAdjacentTopLeft(CurrentIndex, NumOfColumns) :-
 	checkAdjacentTop(CurrentIndex, NumOfColumns),
 	checkAdjacentLeft(CurrentIndex, NumOfColumns).
 
+/*
 
+*/
+pathWithBestScore(Paths, Grid, Res) :-
+	pathWithBestScoreAux(Paths, Grid, [], 0, Res).
 
+pathWithBestScoreAux([], _, BestPath, _, BestPath).
+pathWithBestScoreAux([P | Ps], Grid, BestPath, BestPathScore, Res) :-
+	valuePath(P, Grid, [], ValuePath),
+	sum_list(ValuePath, ValuePathSummed),
+	(
+		ValuePathSummed > BestPathScore,
+		pathWithBestScoreAux(Ps, Grid, P, ValuePathSummed, Res)
+	;
+		pathWithBestScoreAux(Ps, Grid, BestPath, BestPathScore, Res)
+	).
+
+valuePath([], _Grid, ValuePath, ValuePath).
+valuePath([I | Is], Grid, ValuePath, Res) :-
+	nth0(I, Grid, Value),
+	append(ValuePath, [Value], ValuePathAppended),
+	valuePath(Is, Grid, ValuePathAppended, Res).
 /*
 
 */
