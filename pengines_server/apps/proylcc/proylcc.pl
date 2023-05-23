@@ -375,6 +375,17 @@ checkAdjacentTopLeft(CurrentIndex, NumOfColumns) :-
 	checkAdjacentTop(CurrentIndex, NumOfColumns),
 	checkAdjacentLeft(CurrentIndex, NumOfColumns).
 
+
+getBestPathInGrid(_CurrentIndex, [], _CopyGrid, _GridLength, _NumOfColumns, PreviousBestPath, PreviousBestPath).
+
+getBestPathInGrid(CurrentIndex, [X | Xs], CopyGrid, GridLength, NumOfColumns, PreviousBestPath, GetRes) :-
+	nth0(CurrentIndex, CopyGrid, Value),
+	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, [], [], Res, [], Paths),
+	pathWithBestScore(Paths, CopyGrid, BestPath),
+	pathWithBestScore([BestPath, PreviousBestPath], CopyGrid, NewBestPath),
+	NewIndex is CurrentIndex + 1,
+	getBestPathInGrid(NewIndex, Xs, CopyGrid, GridLength, NumOfColumns, NewBestPath, GetRes).
+
 /*
 
 */
