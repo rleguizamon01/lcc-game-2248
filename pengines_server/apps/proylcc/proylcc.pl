@@ -232,7 +232,7 @@ valuesFromGroupsList(Grid, [G | Gs], ValuesList, Res) :-
  * Devuelve la lista de grupos adyacentes en la grilla. 
  * Cada grupo es una lista de índices de bloques adyacentes que conforman un grupo.
  */
-getGroupList([], _GridOriginal, _NumOfColumns, _CurrentIndex, GroupList, GroupList).
+getGroupList([], _, _, _, Res, Res).
 
 getGroupList(Grid, GridOriginal, NumOfColumns, CurrentIndex, GroupList, Res) :-
 	Grid = [N | Ns],
@@ -244,7 +244,7 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentIndex, GroupList, Res) :-
 		getGroupList(Ns, GridOriginal, NumOfColumns, NewIndex, GroupList, Res))
 	;
 		(\+member(CurrentIndex, GroupListFlattened),
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], N, [], Group),
+		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, N, [], Group),
 		length(Group, Length), 
 		(
 			(Length > 1,
@@ -257,115 +257,77 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentIndex, GroupList, Res) :-
 	).
 
 /**
- * adjacentIndexesList(+CurrentIndex, +GridLength, +NumOfColumns, +GridOriginal, +[X | Xs], +Value, +Group, -Res)
+ * adjacentIndexesList(+CurrentIndex, +GridLength, +NumOfColumns, +GridOriginal, +Value, +Group, -Res)
  * Dado un índice, devuelve un listado de índices que conforman su grupo.
  * En caso de que no hayan adyacentes con valores iguales, devuelve una lista conformada 
  * únicamente por los índices actuales.
  */
-adjacentIndexesList(_CurrentIndex, _GridLength, _NumOfColumns, _GridOriginal, [], _Valor, _Group, []).
 
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-	X =:= 1, 
-    append([CurrentIndex], Group, GroupAux),
-    
-	((checkAdjacentRight(CurrentIndex, NumOfColumns),
+ adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Group, Res) :-
+    append([CurrentIndex], Group, GroupAppended),
+	(
+		checkAdjacentRight(CurrentIndex, NumOfColumns),
 		X1 is CurrentIndex + 1,
-		(
-		(\+member(X1, GroupAux),
-		nth0(X1, GridOriginal, Elem1),
-		Elem1 =:= Value,
-		adjacentIndexesList(X1, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, GroupAux, GroupRes),
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-		;
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupAux, ResAux)
-		)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupAux, ResAux)
-			
+		adjacentIndexesListAux(X1, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, GroupAppended, Res1)
+	;
+    	Res1 = GroupAppended
 	),
-    Res = ResAux.
-    
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-	X =:= 2,
-	((checkAdjacentLeft(CurrentIndex, NumOfColumns),
+	(
+		checkAdjacentLeft(CurrentIndex, NumOfColumns),
 		X2 is CurrentIndex - 1,
-		adjacentIndexesListAux(X2, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
+		adjacentIndexesListAux(X2, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res1, Res2)
+	;
+    	Res2 = Res1
 	),
-    Res = ResAux.
-
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-   	X =:= 3,
-	((checkAdjacentTop(CurrentIndex, NumOfColumns),
+	(
+		checkAdjacentTop(CurrentIndex, NumOfColumns),
 		X3 is CurrentIndex - NumOfColumns,
-		adjacentIndexesListAux(X3, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
+		adjacentIndexesListAux(X3, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res2, Res3)
+	;
+    	Res3 = Res2
 	),
-    Res = ResAux.
-
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-    X =:= 4,
-	((checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
+	(
+		checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
 		X4 is CurrentIndex + NumOfColumns,
-		adjacentIndexesListAux(X4, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
+		adjacentIndexesListAux(X4, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res3, Res4)
+	;
+    	Res4 = Res3
 	),
-    Res = ResAux.
-
-
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-    X =:= 5, 
-	((checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
+	(
+		checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
 		X5 is CurrentIndex + NumOfColumns + 1,
-		adjacentIndexesListAux(X5, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
+		adjacentIndexesListAux(X5, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res4, Res5)
+	;
+    	Res5 = Res4
 	),
-    Res = ResAux.
-
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-    X =:= 6, 
-	((checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
+	(
+		checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
 		X6 is CurrentIndex + NumOfColumns - 1,
-		adjacentIndexesListAux(X6, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
+		adjacentIndexesListAux(X6, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res5, Res6)
+	;
+    	Res6 = Res5
 	), 
-    Res = ResAux.
-    
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-    X =:= 7,
-	((checkAdjacentTopRight(CurrentIndex, NumOfColumns),
+	(
+		checkAdjacentTopRight(CurrentIndex, NumOfColumns),
 		X7 is CurrentIndex - NumOfColumns + 1,
-		adjacentIndexesListAux(X7, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
+		adjacentIndexesListAux(X7, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res6, Res7)
+	;
+    	Res7 = Res6
 	),
-   Res = ResAux.
-
-adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, Res) :-
-    X =:= 8,
-	((checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
+	(
+		checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
 		X8 is CurrentIndex - NumOfColumns - 1,
-		adjacentIndexesListAux(X8, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux)
-	);
-		adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-	), 
-    append(Group, ResAux, Res).
+		adjacentIndexesListAux(X8, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res7, Res)
+	;
+    	Res = Res7
+	).
 
-
-adjacentIndexesListAux(XCheck, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, Group, ResAux) :-
-	((\+member(XCheck, Group),
+adjacentIndexesListAux(XCheck, _, GridLength, NumOfColumns, GridOriginal, Value, Group, Res) :-
+	\+member(XCheck, Group),
 	nth0(XCheck, GridOriginal, Elem1), 
 	Elem1 =:= Value, 
-	adjacentIndexesList(XCheck, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Value, Group, GroupRes),
-	adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, GroupRes, ResAux))
-	;
-	adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, ResAux)
-	).
+	adjacentIndexesList(XCheck, GridLength, NumOfColumns, GridOriginal, Value, Group, Res).
+
 
 /**
  * checkAdjacentRight(+CurrentIndex, +NumOfColumns)
