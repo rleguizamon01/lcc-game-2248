@@ -265,61 +265,45 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentIndex, GroupList, Res) :-
 
  adjacentIndexesList(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Group, Res) :-
     append([CurrentIndex], Group, GroupAppended),
-	(
-		checkAdjacentRight(CurrentIndex, NumOfColumns),
+	(	checkAdjacentRight(CurrentIndex, NumOfColumns),
 		X1 is CurrentIndex + 1,
 		adjacentIndexesListAux(X1, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, GroupAppended, Res1)
-	;
-    	Res1 = GroupAppended
+	;	Res1 = GroupAppended
 	),
-	(
-		checkAdjacentLeft(CurrentIndex, NumOfColumns),
+	(	checkAdjacentLeft(CurrentIndex, NumOfColumns),
 		X2 is CurrentIndex - 1,
 		adjacentIndexesListAux(X2, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res1, Res2)
-	;
-    	Res2 = Res1
+	;	Res2 = Res1
 	),
-	(
-		checkAdjacentTop(CurrentIndex, NumOfColumns),
+	(	checkAdjacentTop(CurrentIndex, NumOfColumns),
 		X3 is CurrentIndex - NumOfColumns,
 		adjacentIndexesListAux(X3, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res2, Res3)
-	;
-    	Res3 = Res2
+	;	Res3 = Res2
 	),
-	(
-		checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
+	(	checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
 		X4 is CurrentIndex + NumOfColumns,
 		adjacentIndexesListAux(X4, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res3, Res4)
-	;
-    	Res4 = Res3
+	;	Res4 = Res3
 	),
-	(
-		checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
+	(	checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
 		X5 is CurrentIndex + NumOfColumns + 1,
 		adjacentIndexesListAux(X5, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res4, Res5)
-	;
-    	Res5 = Res4
+	;	Res5 = Res4
 	),
-	(
-		checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
+	(	checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
 		X6 is CurrentIndex + NumOfColumns - 1,
 		adjacentIndexesListAux(X6, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res5, Res6)
-	;
-    	Res6 = Res5
+	;	Res6 = Res5
 	), 
-	(
-		checkAdjacentTopRight(CurrentIndex, NumOfColumns),
+	(	checkAdjacentTopRight(CurrentIndex, NumOfColumns),
 		X7 is CurrentIndex - NumOfColumns + 1,
 		adjacentIndexesListAux(X7, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res6, Res7)
-	;
-    	Res7 = Res6
+	;	Res7 = Res6
 	),
-	(
-		checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
+	(	checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
 		X8 is CurrentIndex - NumOfColumns - 1,
 		adjacentIndexesListAux(X8, CurrentIndex, GridLength, NumOfColumns, GridOriginal, Value, Res7, Res)
-	;
-    	Res = Res7
+	;	Res = Res7
 	).
 
 adjacentIndexesListAux(XCheck, _, GridLength, NumOfColumns, GridOriginal, Value, Group, Res) :-
