@@ -376,11 +376,16 @@ checkAdjacentTopLeft(CurrentIndex, NumOfColumns) :-
 	checkAdjacentLeft(CurrentIndex, NumOfColumns).
 
 
+/**
+*
+* PARTE 2 --------------------------------------------------------------------
+*
+*/
 getBestPathInGrid(_CurrentIndex, [], _CopyGrid, _GridLength, _NumOfColumns, PreviousBestPath, PreviousBestPath).
 
 getBestPathInGrid(CurrentIndex, [X | Xs], CopyGrid, GridLength, NumOfColumns, PreviousBestPath, GetRes) :-
 	nth0(CurrentIndex, CopyGrid, Value),
-	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Value, [], [], Res, [], Paths),
+	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, CopyGrid, [1,2,3,4,5,6,7,8], Value, [], [], Res, [], Paths),
 	pathWithBestScore(Paths, CopyGrid, BestPath),
 	pathWithBestScore([BestPath, PreviousBestPath], CopyGrid, NewBestPath),
 	NewIndex is CurrentIndex + 1,
@@ -533,6 +538,87 @@ adjacentIndexesListAux2(XCheck, CurrentIndex, GridLength, NumOfColumns, GridOrig
 	;
 	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Value, Group, Path, ResAux, ListaCaminos, ListaCaminosRes)
 	).
+
+
+getBestPathInGridWithAdjacent(_, [], _, _, _, BestPath, BestPath).
+
+getBestPathInGridWithAdjacent(CurrentIndex, [X | Xs], CopyGrid, GridLength, NumOfColumns, PreviousBestPath, GetRes) :-
+	nth0(CurrentIndex, CopyGrid, Value),
+	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, CopyGrid, [1,2,3,4,5,6,7,8], Value, [], [], Res, [], Paths),
+	getCorrectPaths(Paths, CopyGrid, GridLength, NumOfColumns, [], CorrectPaths),
+	pathWithBestScore(CorrectPaths, CopyGrid, BestPath),
+	pathWithBestScore([BestPath, PreviousBestPath], CopyGrid, NewBestPath),
+	NewIndex is CurrentIndex + 1,
+	getBestPathInGridWithAdjacent(NewIndex, Xs, CopyGrid, GridLength, NumOfColumns, NewBestPath, GetRes).
+
+
+naf(X) :- X, !, fail.
+naf(X).
+
+
+getCorrectPaths([], _Grid, _GridLength, _NumOfColumns, CorrectPaths, CorrectPaths).
+
+getCorrectPaths([P | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths) :-
+	lastBlockValue(Grid, P, Valor),
+	checkMaxAdjacentEqual(P, Valor, Grid, GridLength, NumOfColumns),
+	!,
+	append(P, PCorrectPaths, NewCorrectPaths),
+	getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths).
+
+getCorrectPaths([P | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths) :-
+	getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths).
+
+
+
+
+checkMaxAdjacentEqual([X | Xs], Valor, Grid, GridLength, NumOfColumns) :-
+	naf(checkMaxAdjacentEqualAux(X, Valor, Grid, GridLength, NumOfColumns)), 
+	!, 
+	checkMaxAdjacentEqual(Xs, Valor, Grid, GridLength, NumOfColumns).
+
+checkMaxAdjacentEqual([X | Xs], Valor, Grid, GridLength, NumOfColumns) :-
+	checkMaxAdjacentEqualAux(X, Valor, Grid, GridLength, NumOfColumns).
+
+
+checkMaxAdjacentEqualAux(X, Valor, Grid, GridLength, NumOfColumns) :-
+	CurrentIndex = X,
+	(	checkAdjacentRight(CurrentIndex, NumOfColumns),
+		X1 is CurrentIndex + 1,
+		sameValue(CurrentIndex, X1, Grid)
+	);
+	(	checkAdjacentLeft(CurrentIndex, NumOfColumns),
+		X2 is CurrentIndex - 1,
+		sameValue(CurrentIndex, X2, Grid)
+	);
+	(	checkAdjacentTop(CurrentIndex, NumOfColumns),
+		X3 is CurrentIndex - NumOfColumns,
+		sameValue(CurrentIndex, X3, Grid)
+	);
+	(	checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
+		X4 is CurrentIndex + NumOfColumns,
+		sameValue(CurrentIndex, X4, Grid)
+	);
+	(	checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
+		X5 is CurrentIndex + NumOfColumns + 1,
+		sameValue(CurrentIndex, X5, Grid)
+	);
+	(	checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
+		X6 is CurrentIndex + NumOfColumns - 1,
+		sameValue(CurrentIndex, X6, Grid)
+	); 
+	(	checkAdjacentTopRight(CurrentIndex, NumOfColumns),
+		X7 is CurrentIndex - NumOfColumns + 1,
+		sameValue(CurrentIndex, X7, Grid)
+	);
+	(	checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
+		X8 is CurrentIndex - NumOfColumns - 1,
+		sameValue(CurrentIndex, X8, Grid)
+	).
+
+sameValue(Index1, Index2, Grid) :-
+	nth0(Index1, Grid, Value1),
+	nth0(Index2, Grid, Value2),
+	Value1 =:= Value2.
 
 
 
