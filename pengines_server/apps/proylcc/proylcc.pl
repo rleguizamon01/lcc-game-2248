@@ -628,27 +628,32 @@ getCorrectPaths2([P | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, Correc
 	last(P, LastPathIndex),
 	replaceValueInGridIndex(GridWithEmptyPath, LastPathIndex, LastBlockValue, GridWithLastBlock),
 	gridWithGravity(GridWithLastBlock, NumOfColumns, GridWithGravity),
-	getNewIndex(P, LastPathIndex, GridLength, NumOfColumns, NewIndexOfLastBlock),
-	checkMaxAdjacentEqualAux(NewIndexOfLastBlock, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
+	indexAfterGravity(P, LastPathIndex, NumOfColumns, newIndexAfterGravity),
+	checkMaxAdjacentEqualAux(newIndexAfterGravity, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
 	!,
 	append(P, PCorrectPaths, NewCorrectPaths),
 	getCorrectPaths2(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths).
 
-
-
 getCorrectPaths2([P | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths) :-
 	getCorrectPaths2(Ps, Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths).
 
+indexAfterGravity(Path, LastPathIndex, NumOfColumns, Res) :-
+	indexAfterGravityAux(Path, LastPathIndex, LastPathIndex, NumOfColumns, Res). 
+		
+indexAfterGravityAux([], _LastPathIndex, NewIndex, _NumOfColumns, NewIndex).
 
-getNewIndex([], LastPathIndex, _GridLength, _NumOfColumns, LastPathIndex).
+indexAfterGravityAux([P | Ps], LastPathIndex, NewIndex, NumOfColumns, Res) :-
+	sameColumn(P, LastPathIndex, NumOfColumns),
+	P > LastPathIndex,
+	NextIndex is NewIndex + NumOfColumns,
+	indexAfterGravityAux(Ps, LastPathIndex, NextIndex, NumOfColumns, Res).
 
-getNewIndex([X | Xs], LastPathIndex, GridLength, NumOfColumns, Res) :-
-	LastPathIndex + NumOfColumns =:= X,
-	NewIndex is LastPathIndex + GridLength,
-	getNewIndex(Xs, NewIndex, GridLength, NumOfColumns, Res) 
+indexAfterGravityAux([_P | Ps], LastPathIndex, NewIndex, NumOfColumns, Res) :-
+	indexAfterGravityAux(Ps, LastPathIndex, NewIndex, NumOfColumns, Res).
 
-getNewIndex([X | Xs], LastPathIndex, GridLength, NumOfColumns, Res) :-
-	getNewIndex(Xs, LastPathIndex, GridLength, NumOfColumns, Res) 
+sameColumn(Index1, Index2, NumOfColumns) :-
+	DistanceBetweenIndexes is abs(Index1 - Index2),
+	DistanceBetweenIndexes mod NumOfColumns =:= 0.
 	
 
 
