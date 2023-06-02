@@ -620,6 +620,43 @@ sameValue(PathValue, Index, Grid) :-
 	PathValue =:= Value.
 
 
+getCorrectPaths2([], _Grid, _GridLength, _NumOfColumns, CorrectPaths, CorrectPaths).
+
+getCorrectPaths2([P | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths) :-
+	lastBlockValue(Grid, P, LastBlockValue),
+	gridWithEmptyPath(Grid, P, 0, GridWithEmptyPath),
+	last(P, LastPathIndex),
+	replaceValueInGridIndex(GridWithEmptyPath, LastPathIndex, LastBlockValue, GridWithLastBlock),
+	gridWithGravity(GridWithLastBlock, NumOfColumns, GridWithGravity),
+	getNewIndex(P, LastPathIndex, GridLength, NumOfColumns, NewIndexOfLastBlock),
+	checkMaxAdjacentEqualAux(NewIndexOfLastBlock, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
+	!,
+	append(P, PCorrectPaths, NewCorrectPaths),
+	getCorrectPaths2(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths).
+
+
+
+getCorrectPaths2([P | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths) :-
+	getCorrectPaths2(Ps, Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths).
+
+
+getNewIndex([], LastPathIndex, _GridLength, _NumOfColumns, LastPathIndex).
+
+getNewIndex([X | Xs], LastPathIndex, GridLength, NumOfColumns, Res) :-
+	LastPathIndex + NumOfColumns =:= X,
+	NewIndex is LastPathIndex + GridLength,
+	getNewIndex(Xs, NewIndex, GridLength, NumOfColumns, Res) 
+
+getNewIndex([X | Xs], LastPathIndex, GridLength, NumOfColumns, Res) :-
+	getNewIndex(Xs, LastPathIndex, GridLength, NumOfColumns, Res) 
+	
+
+
+
+
+
+
+
 
 
 
