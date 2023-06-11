@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
-import { joinResult } from './util';
+import { getPositionFromIndex, joinResult } from './util';
 import Square from './Square';
 
 let pengine;
@@ -39,6 +39,7 @@ function Game() {
    * Called while the user is drawing a path in the grid, each time the path changes.
    */
   function onPathChange(newPath) {
+    console.log(newPath);
     // No effect if waiting.
     if (waiting) {
       return;
@@ -95,9 +96,9 @@ function Game() {
   }
 
   /**
-   * Called when the user clicks the booster button
+   * Called when the user clicks the booster button 1
    */
-  function onCallBooster() {
+  function onCallBooster1() {
     if (waiting || path.length > 1)
       return;
 
@@ -109,6 +110,64 @@ function Game() {
         animateEffect(response['RGrids']);
       } else {
         setWaiting(false);
+      }
+    });
+  }
+
+  /**
+   * Called when the user clicks the booster button 2
+   */
+  function onCallBooster2() {
+    if (waiting)
+      return;
+
+    const gridS = JSON.stringify(grid);
+    const queryS = "booster2(" + gridS + ", " + numOfColumns + ", Res)";
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
+      setWaiting(false);
+
+      if (success) {
+        setWaiting(false);
+
+        let bestPath = response['Res'];
+        const bestPositionPath = bestPath.map(index =>
+          getPositionFromIndex(index, numOfColumns)
+        );
+
+        for (let i = 1; i <= bestPositionPath.length; i++) {
+          const subArray = bestPositionPath.slice(0, i);
+          onPathChange(subArray);
+        }
+      }
+    });
+  }
+
+  /**
+   * Called when the user clicks the booster button 3
+   */
+  function onCallBooster3() {
+    if (waiting)
+      return;
+
+    const gridS = JSON.stringify(grid);
+    const queryS = "booster3(" + gridS + ", " + numOfColumns + ", Res)";
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
+      setWaiting(false);
+
+      if (success) {
+        setWaiting(false);
+
+        let bestPath = response['Res'];
+        const bestPositionPath = bestPath.map(index =>
+          getPositionFromIndex(index, numOfColumns)
+        );
+
+        for (let i = 1; i <= bestPositionPath.length; i++) {
+          const subArray = bestPositionPath.slice(0, i);
+          onPathChange(subArray);
+        }
       }
     });
   }
@@ -134,9 +193,21 @@ function Game() {
       <div>
         <img
           className="booster"
-          src="booster.png"
+          src="booster1.png"
           alt="Botón Booster"
-          onClick={onCallBooster}
+          onClick={onCallBooster1}
+        />
+        <img
+          className="booster"
+          src="booster2.png"
+          alt="Botón Booster Movida Máxima"
+          onClick={onCallBooster2}
+        />
+        <img
+          className="booster"
+          src="booster3.png"
+          alt="Botón Booster Máximos Adyacentes Iguales"
+          onClick={onCallBooster3}
         />
       </div>
     </div>

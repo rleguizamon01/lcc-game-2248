@@ -26,6 +26,10 @@ export const setEmpty = (pos, grid, numOfColumns) => {
     grid[pos[0] * numOfColumns + pos[1]] = 0;
 }
 
+export const getPositionFromIndex = (index, numOfColumns) => {
+    return [Math.floor(index / numOfColumns), index % numOfColumns];
+}
+
 export const posInPath = (pos, path) => {
     return path.some(posI => equalPos(posI, pos));
 }

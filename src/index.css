@@ -61,6 +61,7 @@ body {
   border: white 1px solid;
   border-radius: 6px;
   cursor: pointer;
+  margin-right: 10px;
 }
 
 .rise {
