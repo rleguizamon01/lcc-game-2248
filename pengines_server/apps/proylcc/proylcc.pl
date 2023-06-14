@@ -536,7 +536,8 @@ adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | 
    ListaCaminosRes = ListaCaminosAux,
    Res = ResAux.
 
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
+
+   adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
     X =:= 8,
 	((checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
 		X8 is CurrentIndex - NumOfColumns - 1,
@@ -545,7 +546,22 @@ adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | 
 		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
 	), 
     append(Group, ResAux, Res),
+    length(Path, LengthPath),
+    LengthPath > 1,
+    !,
     append([Path], ListaCaminosAux, ListaCaminosRes).
+
+
+adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
+    X =:= 8,
+	((checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
+		X8 is CurrentIndex - NumOfColumns - 1,
+		adjacentIndexesListAux2(X8, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+	);
+		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+	),
+   	ListaCaminosRes = ListaCaminosAux,
+   	Res = ResAux.
 
 
 adjacentIndexesListAux2(XCheck, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [_X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosRes) :-
