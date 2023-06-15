@@ -379,10 +379,9 @@ checkAdjacentTopLeft(CurrentIndex, NumOfColumns) :-
 	checkAdjacentTop(CurrentIndex, NumOfColumns),
 	checkAdjacentLeft(CurrentIndex, NumOfColumns).
 
-
-/**
+/*
 *
-* PARTE 2 --------------------------------------------------------------------
+* Entrega 2
 *
 */
 
@@ -390,7 +389,6 @@ checkAdjacentTopLeft(CurrentIndex, NumOfColumns) :-
 * booster2(+Grid, +NumOfColumns, -Res)
 * Res es el camino de la grilla con mayor valor
 */
-
 booster2(Grid, NumOfColumns, Res) :-
 	length(Grid, GridLength),
 	getBestPathInGrid(0, Grid, Grid, GridLength, NumOfColumns, [], BestPath),
@@ -398,13 +396,12 @@ booster2(Grid, NumOfColumns, Res) :-
 
 /*
 * getBestPathInGrid(+CurrentIndex, +Grid, +Grid, +GridLength, +NumOfColumns, +PreviousBestPath, -BestPath)
-* 
+* Devuelve el camino con mayor valor de la grilla
 */
-
 getBestPathInGrid(_CurrentIndex, [], _CopyGrid, _GridLength, _NumOfColumns, PreviousBestPath, PreviousBestPath).
 
 getBestPathInGrid(CurrentIndex, [_X | Xs], CopyGrid, GridLength, NumOfColumns, PreviousBestPath, GetRes) :-
-	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, CopyGrid, [1,2,3,4,5,6,7,8], [], [], _Res, [], Paths),
+	allPathsFromIndex(CurrentIndex, GridLength, NumOfColumns, CopyGrid, [], [], Paths),
 	pathWithBestScore(Paths, CopyGrid, BestPath),
 	pathWithBestScore([BestPath, PreviousBestPath], CopyGrid, NewBestPath),
 	NewIndex is CurrentIndex + 1,
@@ -413,13 +410,14 @@ getBestPathInGrid(CurrentIndex, [_X | Xs], CopyGrid, GridLength, NumOfColumns, P
 /*
 * pathWithBestScore(+Paths, +Grid, -Res)
 * Dado un grupo de caminos y la grilla devuelve el camino que mas valor tiene entre ellos
-*
 */
 pathWithBestScore(Paths, Grid, Res) :-
 	pathWithBestScoreAux(Paths, Grid, [], 0, Res).
 
 pathWithBestScoreAux([], _, BestPath, _, BestPath).
 pathWithBestScoreAux([P | Ps], Grid, BestPath, BestPathScore, Res) :-
+	length(P, LengthPath),
+    LengthPath > 1,
 	valuePath(P, Grid, [], ValuePath),
 	sum_list(ValuePath, ValuePathSummed),
 	(
@@ -429,6 +427,10 @@ pathWithBestScoreAux([P | Ps], Grid, BestPath, BestPathScore, Res) :-
 		pathWithBestScoreAux(Ps, Grid, BestPath, BestPathScore, Res)
 	).
 
+/*
+* valuePath(+IndexPath, +Grid, +ValuePath, -Res)
+* Dado un camino de índices, devuelve una lista de sus valores
+*/
 valuePath([], _Grid, ValuePath, ValuePath).
 valuePath([I | Is], Grid, ValuePath, Res) :-
 	nth0(I, Grid, Value),
@@ -436,178 +438,94 @@ valuePath([I | Is], Grid, ValuePath, Res) :-
 	valuePath(Is, Grid, ValuePathAppended, Res).
 
 /*
-* adjacentIndexesList2(+CurrentIndex, +GridLength, +NumOfColumns, +GridOriginal, )
+* allPathsFromIndex(+CurrentIndex, +GridLength, +NumOfColumns, +GridOriginal, )
 * Dado un determinado indice, se obtienen todos los caminos posibles partiendo desde dicho indice
 */
-
-adjacentIndexesList2(_CurrentIndex, _GridLength, _NumOfColumns, _GridOriginal, [], _Group, _Path, [], ListaCaminos, ListaCaminos).
-
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-	X =:= 1, 
-    append([CurrentIndex], Group, GroupAux),
-    append([CurrentIndex], Path, PathAux),
-	((checkAdjacentRight(CurrentIndex, NumOfColumns),
+allPathsFromIndex(CurrentIndex, GridLength, NumOfColumns, Grid, Path, Paths, Res) :-
+    append([CurrentIndex], Path, PathAppended),
+    append([PathAppended], Paths, PathsRes1),
+	(	checkAdjacentRight(CurrentIndex, NumOfColumns),
 		X1 is CurrentIndex + 1,
-		(
-		(\+member(X1, GroupAux),
-		nth0(X1, GridOriginal, Elem1),
-        nth0(CurrentIndex, GridOriginal, Value),
-		(
-			Elem1 =:= Value;
-			length(PathAux, LengthPath),
-			LengthPath > 1,
-			Elem1 =:= Value * 2
-		),
-		adjacentIndexesList2(X1, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], GroupAux, PathAux, _GroupRes, ListaCaminos, ListaCaminosAux),
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, GroupAux, PathAux, ResAux, ListaCaminosAux, ListaCaminosRes))
-		;
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, GroupAux, PathAux, ResAux, ListaCaminos, ListaCaminosRes)
-		)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, GroupAux, PathAux, ResAux, ListaCaminos, ListaCaminosRes)
-			
+		adjacentIndexesListAux2(X1, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, PathsRes1, Res1)
+	;	Res1 = PathsRes1
 	),
-    Res = ResAux.
-    
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-	X =:= 2,
-	((checkAdjacentLeft(CurrentIndex, NumOfColumns),
+	(	checkAdjacentLeft(CurrentIndex, NumOfColumns),
 		X2 is CurrentIndex - 1,
-		adjacentIndexesListAux2(X2, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+		adjacentIndexesListAux2(X2, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res1, Res2)
+	;	Res2 = Res1
 	),
-    ListaCaminosRes = ListaCaminosAux,
-    Res = ResAux.
-
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-   	X =:= 3,
-	((checkAdjacentTop(CurrentIndex, NumOfColumns),
+	(	checkAdjacentTop(CurrentIndex, NumOfColumns),
 		X3 is CurrentIndex - NumOfColumns,
-		adjacentIndexesListAux2(X3, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+		adjacentIndexesListAux2(X3, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res2, Res3)
+	;	Res3 = Res2
 	),
-    ListaCaminosRes = ListaCaminosAux,
-    Res = ResAux.
-
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-    X =:= 4,
-	((checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
+	(	checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
 		X4 is CurrentIndex + NumOfColumns,
-		adjacentIndexesListAux2(X4, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+		adjacentIndexesListAux2(X4, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res3, Res4)
+	;	Res4 = Res3
 	),
-    ListaCaminosRes = ListaCaminosAux,
-    Res = ResAux.
-
-
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-    X =:= 5,
-	((checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
+	(	checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
 		X5 is CurrentIndex + NumOfColumns + 1,
-		adjacentIndexesListAux2(X5, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+		adjacentIndexesListAux2(X5, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res4, Res5)
+	;	Res5 = Res4
 	),
-    ListaCaminosRes = ListaCaminosAux,
-    Res = ResAux.
-
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-    X =:= 6,
-	((checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
+	(	checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
 		X6 is CurrentIndex + NumOfColumns - 1,
-		adjacentIndexesListAux2(X6, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+		adjacentIndexesListAux2(X6, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res5, Res6)
+	;	Res6 = Res5
 	),
-    ListaCaminosRes = ListaCaminosAux,
-    Res = ResAux.
-    
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-    X =:= 7,
-	((checkAdjacentTopRight(CurrentIndex, NumOfColumns),
+	(	checkAdjacentTopRight(CurrentIndex, NumOfColumns),
 		X7 is CurrentIndex - NumOfColumns + 1,
-		adjacentIndexesListAux2(X7, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
+		adjacentIndexesListAux2(X7, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res6, Res7)
+	;	Res7 = Res6
 	),
-   ListaCaminosRes = ListaCaminosAux,
-   Res = ResAux.
-
-
-   adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-    X =:= 8,
-	((checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
+	(	checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
 		X8 is CurrentIndex - NumOfColumns - 1,
-		adjacentIndexesListAux2(X8, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	), 
-    append(Group, ResAux, Res),
-    length(Path, LengthPath),
-    LengthPath > 1,
-    !,
-    append([Path], ListaCaminosAux, ListaCaminosRes).
-
-
-adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, Res, ListaCaminos, ListaCaminosRes) :-
-    X =:= 8,
-	((checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
-		X8 is CurrentIndex - NumOfColumns - 1,
-		adjacentIndexesListAux2(X8, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	);
-		adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosAux)
-	),
-   	ListaCaminosRes = ListaCaminosAux,
-   	Res = ResAux.
-
-
-adjacentIndexesListAux2(XCheck, CurrentIndex, GridLength, NumOfColumns, GridOriginal, [_X | Xs], Group, Path, ResAux, ListaCaminos, ListaCaminosRes) :-
-	((\+member(XCheck, Group),
-	nth0(XCheck, GridOriginal, Elem1),
-    nth0(CurrentIndex, GridOriginal, Value),
-	(
-		Elem1 =:= Value;
-		length(Path, LengthPath),
-		LengthPath > 1,
-		Elem1 =:= Value * 2
-	),
-	adjacentIndexesList2(XCheck, GridLength, NumOfColumns, GridOriginal, [1,2,3,4,5,6,7,8], Group, Path, _GroupRes, ListaCaminos, ListaCaminosAux),
-	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminosAux, ListaCaminosRes))
-	;
-	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, GridOriginal, Xs, Group, Path, ResAux, ListaCaminos, ListaCaminosRes)
+		adjacentIndexesListAux2(X8, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res7, Res)
+	;	Res = Res7
 	).
 
-/* Booster 3 */
+adjacentIndexesListAux2(NewIndex, CurrentIndex, GridLength, NumOfColumns, Grid, Path, PathsRes, Res) :-
+	\+member(NewIndex, Path),
+	nth0(NewIndex, Grid, NewIndexValue),
+	nth0(CurrentIndex, Grid, CurrentIndexValue),
+	(
+		NewIndexValue =:= CurrentIndexValue;
+        length(Path, LengthPath),
+        LengthPath > 1,
+		NewIndexValue =:= CurrentIndexValue * 2
+	),
+	allPathsFromIndex(NewIndex, GridLength, NumOfColumns, Grid, Path, PathsRes, Res).
 
 /*
 * booster3(+Grid, +NumOfColumns, -Res)
 * Res devuelve el camino que cumple con la condición del segundo ejercicio
 */
-
 booster3(Grid, NumOfColumns, Res) :-
 	length(Grid, GridLength),
 	getBestPathInGridWithAdjacent(0, Grid, Grid, GridLength, NumOfColumns, [], BestPath),
 	reverse(BestPath, Res).
 
+/*
+* getBestPathInGridWithAdjacent(+CurrentIndex, +Grid, +CopyGrid, +GridLength, +NumOfColumns, +PreviousBestPath, -Res)
+* Devuelve el mejor mejor camino que cumpla con la condición del segundo ejercicio
+*/
 getBestPathInGridWithAdjacent(_, [], _, _, _, BestPath, BestPath).
 
 getBestPathInGridWithAdjacent(CurrentIndex, [_X | Xs], CopyGrid, GridLength, NumOfColumns, PreviousBestPath, GetRes) :-
-	adjacentIndexesList2(CurrentIndex, GridLength, NumOfColumns, CopyGrid, [1,2,3,4,5,6,7,8], [], [], _Res, [], Paths),
-	getCorrectPaths2(Paths, CopyGrid, GridLength, NumOfColumns, [], CorrectPaths),
+	allPathsFromIndex(CurrentIndex, GridLength, NumOfColumns, CopyGrid, [], [], Paths),
+	getCorrectPaths(Paths, CopyGrid, GridLength, NumOfColumns, [], CorrectPaths),
 	pathWithBestScore(CorrectPaths, CopyGrid, BestPath),
 	pathWithBestScore([BestPath, PreviousBestPath], CopyGrid, NewBestPath),
 	NewIndex is CurrentIndex + 1,
 	getBestPathInGridWithAdjacent(NewIndex, Xs, CopyGrid, GridLength, NumOfColumns, NewBestPath, GetRes).
 
 /*
-* checkMaxAdjacentEqualAux(+CurrentIndex, +PathValue, +Grid, +GridLength, +NumOfColumns)
-* Dado un determinado indice determina si el valor de alguno de sus adyacentes coincide con el valor
+* checkAdjacentsSameValue(+CurrentIndex, +PathValue, +Grid, +GridLength, +NumOfColumns)
+* Dado un determinado índice determina si el valor de alguno de sus adyacentes coincide con el valor
 * asociado al indice
 */
-checkMaxAdjacentEqualAux(CurrentIndex, PathValue, Grid, GridLength, NumOfColumns) :-
+checkAdjacentsSameValue(CurrentIndex, PathValue, Grid, GridLength, NumOfColumns) :-
 	(	checkAdjacentRight(CurrentIndex, NumOfColumns),
 		X1 is CurrentIndex + 1,
 		sameValue(PathValue, X1, Grid)
@@ -643,45 +561,43 @@ checkMaxAdjacentEqualAux(CurrentIndex, PathValue, Grid, GridLength, NumOfColumns
 
 /*
 * sameValue(+PathValue, +Index, +Grid)
-* Dada la grilla, un determinado valor y un indice determina si el valor asociado al indice es igual al pasado por 
-* parametro
+* Dada la grilla, un determinado valor y un índice determina si el valor asociado al índice es igual al pasado por 
+* parámetro
 */
-
 sameValue(PathValue, Index, Grid) :-
 	nth0(Index, Grid, Value),
 	PathValue =:= Value.
 
-
 /*
-* getCorrectPaths2(+Paths, +Grid, +GridLength, +NumOfColumns, +CorrectPaths, Res)
+* getCorrectPaths(+Paths, +Grid, +GridLength, +NumOfColumns, +CorrectPaths, Res)
 * Recibe un grupo de caminos por parametro y devuelve aquellos que cumplen que su bloque generado, una vez aplicada la gravedad
 * tiene como adyacente a un bloque con el mismo valor
 */
+getCorrectPaths([], _Grid, _GridLength, _NumOfColumns, CorrectPaths, CorrectPaths).
 
-getCorrectPaths2([], _Grid, _GridLength, _NumOfColumns, CorrectPaths, CorrectPaths).
-
-getCorrectPaths2([P | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths) :-
+getCorrectPaths([P | Ps], Grid, GridLength, NumOfColumns, PreviousCorrectPaths, CorrectPaths) :-
+	length(P, PathLength),
+	PathLength > 1,
 	lastBlockValue(Grid, P, LastBlockValue),
 	gridWithEmptyPath(Grid, P, 0, GridWithEmptyPath),
 	P = [LastPathIndex | _Ls],
 	replaceValueInGridIndex(GridWithEmptyPath, LastPathIndex, LastBlockValue, GridWithLastBlock),
 	gridWithGravity(GridWithLastBlock, NumOfColumns, GridWithGravity),
 	indexAfterGravity(P, LastPathIndex, NumOfColumns, NewIndexAfterGravity),
-      checkMaxAdjacentEqualAux(NewIndexAfterGravity, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
+    checkAdjacentsSameValue(NewIndexAfterGravity, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
 	!,
-	append([P], PCorrectPaths, NewCorrectPaths),
-	getCorrectPaths2(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths).
+	append([P], PreviousCorrectPaths, NewCorrectPaths),
+	getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths).
 
-getCorrectPaths2([_ | Ps], Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths) :-
-	getCorrectPaths2(Ps, Grid, GridLength, NumOfColumns, PCorrectPaths, CorrectPaths).
+getCorrectPaths([_ | Ps], Grid, GridLength, NumOfColumns, PreviousCorrectPaths, CorrectPaths) :-
+	getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, PreviousCorrectPaths, CorrectPaths).
 
 /*
 * indexAfterGravity(+Path, +LastPathIndex, +NumOfColumns, -Res)
-* Dado un determinado camino, el indice del bloque generado del camino 
-* y el numero de columnas determina el nuevo indice de dicho bloque una vez aplicada la gravedad
+* Dado un determinado camino, el número de columnas y el índice de un bloque del camino 
+* determina el nuevo índice de dicho bloque una vez aplicada la gravedad
 *
 */
-
 indexAfterGravity(Path, LastPathIndex, NumOfColumns, Res) :-
 	indexAfterGravityAux(Path, LastPathIndex, LastPathIndex, NumOfColumns, Res). 
 		
@@ -698,9 +614,8 @@ indexAfterGravityAux([_P | Ps], LastPathIndex, NewIndex, NumOfColumns, Res) :-
 
 /*
 * sameColumn(+Index1, +Index2, +NumOfColumns)
-* Dado dos indices y el numero de columnas determina si ambos indices corresponden a la misma columna
+* Dado dos índices y el número de columnas determina si ambos índices corresponden a la misma columna
 */
-
 sameColumn(Index1, Index2, NumOfColumns) :-
 	DistanceBetweenIndexes is abs(Index1 - Index2),
 	DistanceBetweenIndexes mod NumOfColumns =:= 0.
