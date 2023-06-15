@@ -1,10 +1,12 @@
 :- module(proylcc, 
 	[  
 		join/4,
-		booster/3
+		booster/3,
+		booster2/3,
+		booster3/3
 	]).
 
-/**
+/*
  * join(+Grid, +NumOfColumns, +Path, -RGrids) 
  * RGrids es la lista de grillas representando el efecto, en etapas, de combinar las celdas del camino Path
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
@@ -19,7 +21,7 @@ join(Grid, NumOfColumns, Path, RGrids) :-
 	gridWithRandomValues(GridWithGravity, GridWithRandomValues),
 	RGrids = [GridWithEmptyPath, GridWithLastBlock, GridWithGravity, GridWithRandomValues].
 
-/**
+/*
  * indexPath(+Path, +NumOfColumns, -IndexPath)
  * En base al listado de [X, Y] de elementos del camino, devuelve una lista de enteros que corresponden
  * a los índices en la grilla.
@@ -35,7 +37,7 @@ indexPathAux([[N | Ns] | T], NumOfColumns, IndexPath, Result) :-
     indexPathAux(T, NumOfColumns, IndexPathAppended, Result).
 
 
-/**
+/*
  *	gridWithEmptyPath(+Grid, +IndexPath, +CurrentIndex, -EmptyGrid) 
  *	Recorre la grilla y verifica si el índice actual de la grilla es miembro de la lista de índices del camino.
  * 	En caso de serlo, se modifica el valor del elemento por 0.
@@ -60,7 +62,7 @@ gridWithEmptyPath([N | Ns], IndexPath, CurrentIndex, EmptyGrid) :-
 	gridWithEmptyPath(Ns, IndexPath, NextIndex, EmptyGridAux),
 	append([N], EmptyGridAux, EmptyGrid).
 
-/**
+/*
  * sumOfValuesInPath(+Grid, +IndexPath, -Result)
  * Devuelve la suma de valores de la grilla en un determinado camino 
  */
@@ -80,7 +82,7 @@ sumOfValuesInPathAux([G | Gs], IndexPath, CurrentGridIndex, SummedValues, Result
 		sumOfValuesInPathAux(Gs, IndexPath, NextGridIndex, SummedValues, Result))
 	).
 	
-/**
+/*
  * lastBlockValue(+Grid, +IndexPath, -LastBlockValue)
  * Devuelve el valor que debería tener el bloque resultante
  */
@@ -88,7 +90,7 @@ lastBlockValue(Grid, IndexPath, LastBlockValue) :-
 	sumOfValuesInPath(Grid, IndexPath, SumOfPathValue),
 	smallerPow2GreaterOrEqualThan(SumOfPathValue, LastBlockValue).
 
-/**
+/*
  * smallerPow2GreaterOrEqualThan(+Num, -Result)
  * Calcula la potencia de dos mas cercana o igual a un determinado numero
  */
@@ -97,7 +99,7 @@ smallerPow2GreaterOrEqualThan(Num, Result) :-
 
 gridWithRandomValues(Grid, Result) :-
 	replaceZerosWithRandomValue(Grid, Result).
-/**
+/*
  * gridWithGravity(+GridWithEmptyPath, +NumOfColumns, -Result)
  * Devuelve una grilla luego de aplicar gravedad
  */
@@ -128,7 +130,7 @@ gridWithGravityAppliedAux(Grid, NumOfColumns, CurrentIndex, NewGrid, Result) :-
 		gridWithGravityAppliedAux(T, NumOfColumns, NextIndex, NewGridAppended, Result))
 	).
 
-/**
+/*
  * aboveBlockIndex(+Grid, +NumOfColumns, -Result)
  * Devuelve el índice del bloque no vacío más cercano dentro de la misma columna.
  * Si no existe un bloque por encima no vacío, devuelve 0
@@ -152,7 +154,7 @@ aboveBlockIndexAux(Grid, CurrentIndex, NumOfColumns, Result) :-
 		Result = CurrentIndex)
 	).
 
-/**
+/*
  * replaceValueInGridIndex(+List, +Index, +NewValue, -Result)
  * Devuelve una lista que reemplaza el valor en cierto índice por un nuevo valor
  */
@@ -160,7 +162,7 @@ replaceValueInGridIndex(List, Index, NewValue, Result) :-
 	nth0(Index, List, _, ListRemainder),
 	nth0(Index, Result, NewValue, ListRemainder).
 
-/**
+/*
  * replaceZerosWithRandomValue(+[N], -Result)
  * Devuelve una lista que reemplaza todos los ceros por valores aleatorios que sean potencia de 2
  */
@@ -185,7 +187,7 @@ replaceZerosWithRandomValue([N | Ns], Result) :-
 		append([N], ResultAux, Result))
 	).
 
-/**
+/*
  * generateRandomValue(-Num)
  * Genera un valor aleatorio que sea potencia de 2
  */
@@ -193,7 +195,7 @@ generateRandomValue(Num) :-
 	random(1, 7, X),
 	pow(2, X, Num).
 
-/**
+/*
  * booster(+Grid, +NumOfColumns, -RGrids)
  * Devuelve una lista de grillas que representan el efecto, en etapas, de eliminar todos los grupos,
  * poner los bloques correspondientes a cada grupo y aplicar la gravedad.
@@ -208,7 +210,7 @@ booster(Grid, NumOfColumns, RGrids) :-
 	gridWithRandomValues(GridWithGravity, GridWithRandomValues),
 	RGrids = [GridWithEmptyPath, GridWithBoosterBlocks, GridWithGravity, GridWithRandomValues].
 
-/**
+/*
  * gridWithBoosterBlocks(+Grid, +[G | Gs], +[S | Ss], -GridWithBoosterBlocks)
  * Devuelve la grilla con los bloques generados por cada grupo eliminado
  */
@@ -219,7 +221,7 @@ gridWithBoosterBlocks(Grid, [G | Gs], [S | Ss], GridWithBoosterBlocks) :-
 	replaceValueInGridIndex(Grid, BlockIndex, S, NewGrid),
 	gridWithBoosterBlocks(NewGrid, Gs, Ss, GridWithBoosterBlocks).
 
-/**
+/*
  * valuesFromGroupsList(+Grid, +[G | Gs], +ValuesList, -Res)
  * Devuelve una lista con los valores de los bloques a generar correspondientes a cada grupo.
  */
@@ -231,7 +233,7 @@ valuesFromGroupsList(Grid, [G | Gs], ValuesList, Res) :-
 	append(ValuesList, [NewValue], ValuesListAux),
 	valuesFromGroupsList(Grid, Gs, ValuesListAux, Res).
 
-/**
+/*
  * getGroupList(+Grid, +GridOriginal, +NumOfColumns, +CurrentIndex, +GroupList, -Res)
  * Devuelve la lista de grupos adyacentes en la grilla. 
  * Cada grupo es una lista de índices de bloques adyacentes que conforman un grupo.
@@ -260,7 +262,7 @@ getGroupList(Grid, GridOriginal, NumOfColumns, CurrentIndex, GroupList, Res) :-
 		))
 	).
 
-/**
+/*
  * adjacentIndexesList(+CurrentIndex, +GridLength, +NumOfColumns, +GridOriginal, +Value, +Group, -Res)
  * Dado un índice, devuelve un listado de índices que conforman su grupo.
  * En caso de que no hayan adyacentes con valores iguales, devuelve una lista conformada 
@@ -317,7 +319,7 @@ adjacentIndexesListAux(XCheck, _, GridLength, NumOfColumns, GridOriginal, Value,
 	adjacentIndexesList(XCheck, GridLength, NumOfColumns, GridOriginal, Value, Group, Res).
 
 
-/**
+/*
  * checkAdjacentRight(+CurrentIndex, +NumOfColumns)
  * Dado un índice, verifica si existe un bloque a su derecha.
  */
@@ -325,21 +327,21 @@ checkAdjacentRight(CurrentIndex, NumOfColumns) :-
 	RightIndex is CurrentIndex + 1,
 	RightIndex mod NumOfColumns =\= 0.
 
-/**
+/*
  * checkAdjacentLeft(+CurrentIndex, +NumOfColumns)
  * Dado un índice, verifica si existe un bloque a su izquierda.
  */
 checkAdjacentLeft(CurrentIndex, NumOfColumns) :-
 	CurrentIndex mod NumOfColumns =\= 0.
 
-/**
+/*
  * checkAdjacentTop(+CurrentIndex, +NumOfColumns)
  * Dado un índice, verifica si existe un bloque encima.
  */
 checkAdjacentTop(CurrentIndex, NumOfColumns) :-
 	CurrentIndex >= NumOfColumns.
 
-/**
+/*
  * checkAdjacentBottom(+CurrentIndex, +GridLength, +NumOfColumns) 
  * Dado un índice, verifica si existe un bloque debajo.
  */
@@ -347,7 +349,7 @@ checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns) :-
 	BottomIndex is CurrentIndex + NumOfColumns,
 	BottomIndex < GridLength.
 
-/**
+/*
  * checkAdjacentBottomRight(+CurrentIndex, +GridLength, +NumOfColumns)
  * Dado un índice, verifica si existe un bloque abajo a la derecha.
  */
@@ -355,7 +357,7 @@ checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns) :-
 	checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
 	checkAdjacentRight(CurrentIndex, NumOfColumns).
 
-/**
+/*
  * checkAdjacentBottomLeft(+CurrentIndex, +GridLength, +NumOfColumns)
  * Dado un índice, verifica si existe un bloque abajo a la izquierda.
  */
@@ -363,7 +365,7 @@ checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns) :-
 	checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
 	checkAdjacentLeft(CurrentIndex, NumOfColumns).
 
-/**
+/*
  * checkAdjacentTopRight(+CurrentIndex, +NumOfColumns)
  * Dado un índice, verifica si existe un bloque arriba a la derecha.
  */
@@ -371,7 +373,7 @@ checkAdjacentTopRight(CurrentIndex, NumOfColumns) :-
 	checkAdjacentTop(CurrentIndex, NumOfColumns),
 	checkAdjacentRight(CurrentIndex, NumOfColumns).
 
-/**
+/*
  * checkAdjacentTopLeft(+CurrentIndex, +NumOfColumns)
  * Dado un índice, verifica si existe un bloque arriba a la izquierda.
  */
@@ -416,16 +418,18 @@ pathWithBestScore(Paths, Grid, Res) :-
 
 pathWithBestScoreAux([], _, BestPath, _, BestPath).
 pathWithBestScoreAux([P | Ps], Grid, BestPath, BestPathScore, Res) :-
-	length(P, LengthPath),
+    length(P, LengthPath),
     LengthPath > 1,
-	valuePath(P, Grid, [], ValuePath),
-	sum_list(ValuePath, ValuePathSummed),
-	(
-		ValuePathSummed > BestPathScore,
+    !,
+    valuePath(P, Grid, [], ValuePath),
+    sum_list(ValuePath, ValuePathSummed),
+    (   ValuePathSummed > BestPathScore,
 		pathWithBestScoreAux(Ps, Grid, P, ValuePathSummed, Res)
 	;
 		pathWithBestScoreAux(Ps, Grid, BestPath, BestPathScore, Res)
 	).
+pathWithBestScoreAux([_P | Ps], Grid, BestPath, BestPathScore, Res) :-
+    pathWithBestScoreAux(Ps, Grid, BestPath, BestPathScore, Res).
 
 /*
 * valuePath(+IndexPath, +Grid, +ValuePath, -Res)
@@ -584,10 +588,14 @@ getCorrectPaths([P | Ps], Grid, GridLength, NumOfColumns, PreviousCorrectPaths, 
 	replaceValueInGridIndex(GridWithEmptyPath, LastPathIndex, LastBlockValue, GridWithLastBlock),
 	gridWithGravity(GridWithLastBlock, NumOfColumns, GridWithGravity),
 	indexAfterGravity(P, LastPathIndex, NumOfColumns, NewIndexAfterGravity),
-    checkAdjacentsSameValue(NewIndexAfterGravity, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
-	!,
-	append([P], PreviousCorrectPaths, NewCorrectPaths),
-	getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths).
+    !,
+    (   checkAdjacentsSameValue(NewIndexAfterGravity, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
+        append([P], PreviousCorrectPaths, NewCorrectPaths),
+        getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths)
+    ;   
+    	getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, PreviousCorrectPaths, CorrectPaths)
+    ).
+	
 
 getCorrectPaths([_ | Ps], Grid, GridLength, NumOfColumns, PreviousCorrectPaths, CorrectPaths) :-
 	getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, PreviousCorrectPaths, CorrectPaths).
