@@ -512,7 +512,7 @@ booster3(Grid, NumOfColumns, Res) :-
 
 /*
 * getBestPathInGridWithAdjacent(+CurrentIndex, +Grid, +CopyGrid, +GridLength, +NumOfColumns, +PreviousBestPath, -Res)
-* Devuelve el mejor mejor camino que cumpla con la condición del segundo ejercicio
+* Devuelve el mejor camino que cumpla con la condición del segundo ejercicio
 */
 getBestPathInGridWithAdjacent(_, [], _, _, _, BestPath, BestPath).
 
