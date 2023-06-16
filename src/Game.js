@@ -128,8 +128,6 @@ function Game() {
       setWaiting(false);
 
       if (success) {
-        setWaiting(false);
-
         let bestPath = response['Res'];
         const bestPositionPath = bestPath.map(index =>
           getPositionFromIndex(index, numOfColumns)
@@ -157,8 +155,6 @@ function Game() {
       setWaiting(false);
 
       if (success) {
-        setWaiting(false);
-
         let bestPath = response['Res'];
         const bestPositionPath = bestPath.map(index =>
           getPositionFromIndex(index, numOfColumns)
