@@ -450,46 +450,46 @@ allPathsFromIndex(CurrentIndex, GridLength, NumOfColumns, Grid, Path, Paths, Res
     append([PathAppended], Paths, PathsRes1),
 	(	checkAdjacentRight(CurrentIndex, NumOfColumns),
 		X1 is CurrentIndex + 1,
-		adjacentIndexesListAux2(X1, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, PathsRes1, Res1)
+		allPathsFromIndexAux(X1, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, PathsRes1, Res1)
 	;	Res1 = PathsRes1
 	),
 	(	checkAdjacentLeft(CurrentIndex, NumOfColumns),
 		X2 is CurrentIndex - 1,
-		adjacentIndexesListAux2(X2, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res1, Res2)
+		allPathsFromIndexAux(X2, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res1, Res2)
 	;	Res2 = Res1
 	),
 	(	checkAdjacentTop(CurrentIndex, NumOfColumns),
 		X3 is CurrentIndex - NumOfColumns,
-		adjacentIndexesListAux2(X3, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res2, Res3)
+		allPathsFromIndexAux(X3, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res2, Res3)
 	;	Res3 = Res2
 	),
 	(	checkAdjacentBottom(CurrentIndex, GridLength, NumOfColumns),
 		X4 is CurrentIndex + NumOfColumns,
-		adjacentIndexesListAux2(X4, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res3, Res4)
+		allPathsFromIndexAux(X4, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res3, Res4)
 	;	Res4 = Res3
 	),
 	(	checkAdjacentBottomRight(CurrentIndex, GridLength, NumOfColumns),
 		X5 is CurrentIndex + NumOfColumns + 1,
-		adjacentIndexesListAux2(X5, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res4, Res5)
+		allPathsFromIndexAux(X5, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res4, Res5)
 	;	Res5 = Res4
 	),
 	(	checkAdjacentBottomLeft(CurrentIndex, GridLength, NumOfColumns),
 		X6 is CurrentIndex + NumOfColumns - 1,
-		adjacentIndexesListAux2(X6, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res5, Res6)
+		allPathsFromIndexAux(X6, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res5, Res6)
 	;	Res6 = Res5
 	),
 	(	checkAdjacentTopRight(CurrentIndex, NumOfColumns),
 		X7 is CurrentIndex - NumOfColumns + 1,
-		adjacentIndexesListAux2(X7, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res6, Res7)
+		allPathsFromIndexAux(X7, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res6, Res7)
 	;	Res7 = Res6
 	),
 	(	checkAdjacentTopLeft(CurrentIndex, NumOfColumns),
 		X8 is CurrentIndex - NumOfColumns - 1,
-		adjacentIndexesListAux2(X8, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res7, Res)
+		allPathsFromIndexAux(X8, CurrentIndex, GridLength, NumOfColumns, Grid, PathAppended, Res7, Res)
 	;	Res = Res7
 	).
 
-adjacentIndexesListAux2(NewIndex, CurrentIndex, GridLength, NumOfColumns, Grid, Path, PathsRes, Res) :-
+allPathsFromIndexAux(NewIndex, CurrentIndex, GridLength, NumOfColumns, Grid, Path, PathsRes, Res) :-
 	\+member(NewIndex, Path),
 	nth0(NewIndex, Grid, NewIndexValue),
 	nth0(CurrentIndex, Grid, CurrentIndexValue),
@@ -588,7 +588,6 @@ getCorrectPaths([P | Ps], Grid, GridLength, NumOfColumns, PreviousCorrectPaths, 
 	replaceValueInGridIndex(GridWithEmptyPath, LastPathIndex, LastBlockValue, GridWithLastBlock),
 	gridWithGravity(GridWithLastBlock, NumOfColumns, GridWithGravity),
 	indexAfterGravity(P, LastPathIndex, NumOfColumns, NewIndexAfterGravity),
-    !,
     (   checkAdjacentsSameValue(NewIndexAfterGravity, LastBlockValue, GridWithGravity, GridLength, NumOfColumns),
         append([P], PreviousCorrectPaths, NewCorrectPaths),
         getCorrectPaths(Ps, Grid, GridLength, NumOfColumns, NewCorrectPaths, CorrectPaths)
@@ -614,6 +613,7 @@ indexAfterGravityAux([], _LastPathIndex, NewIndex, _NumOfColumns, NewIndex).
 indexAfterGravityAux([P | Ps], LastPathIndex, NewIndex, NumOfColumns, Res) :-
 	sameColumn(P, LastPathIndex, NumOfColumns),
 	P > LastPathIndex,
+	!,
 	NextIndex is NewIndex + NumOfColumns,
 	indexAfterGravityAux(Ps, LastPathIndex, NextIndex, NumOfColumns, Res).
 
